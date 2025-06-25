@@ -27,6 +27,21 @@ services:
     networks:
       - app-network
 
+  backend-tests:
+    build: ./backend # Usa o mesmo Dockerfile do backend
+    container_name: service_catalog_backend_tests
+    # Substitui o comando de 'run' para executar o pytest
+    command: ["pytest"]
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    # Depende do serviço do mongo estar de pé (mesmo que usemos um mock)
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
   # Serviço do Frontend (React + Nginx)
   frontend:
     build:

@@ -8,3 +8,9 @@ python-dotenv
 motor
 email-validator
 python-multipart
+
+# Dependências de Teste
+pytest
+pytest-asyncio
+httpx
+mongomock-motor

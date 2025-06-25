@@ -19,6 +19,7 @@ Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas d
   - [Pré-requisitos](#pré-requisitos)
   - [Configuração do Ambiente](#configuração-do-ambiente)
   - [Iniciando a Aplicação](#iniciando-a-aplicação)
+- [Executando os Testes](#executando-os-testes)
 - [Documentação da API](#documentação-da-api)
   - [Autenticação](#autenticação)
   - [Recursos (Resources)](#recursos-resources)
@@ -76,6 +77,7 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 |                 | **Motor** | Driver assíncrono oficial para interagir com o MongoDB a partir do FastAPI.                        |
 | **Containerização** | **Docker & Docker Compose** | A aplicação inteira (frontend, backend, base de dados) é executada em contêineres isolados. |
 | **Ambiente de Build** | **Node.js 24** | Utilizado para construir a aplicação React para produção. |
+| **Testes** | **Pytest** | Framework para a execução dos testes unitários do backend. |
 
 ## Como Executar o Projeto
 
@@ -132,6 +134,18 @@ Para parar todos os contêineres, pressione `Ctrl + C` no terminal e depois exec
 ```bash
 docker-compose down
 ```
+
+## Executando os Testes
+
+Este projeto inclui uma suíte de testes unitários para o backend, utilizando `pytest`. Os testes são executados num ambiente isolado com uma base de dados em memória (`mongomock`), garantindo que não afetam os dados reais.
+
+Para executar a suíte de testes completa, use o serviço `backend-tests` definido no `docker-compose.yml`:
+
+```bash
+docker-compose up backend-tests
+```
+
+Este comando irá construir a imagem, iniciar o contentor, executar os testes e parar. Se algum teste falhar, o processo será interrompido com um erro.
 
 ## Documentação da API
 

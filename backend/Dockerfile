@@ -6,6 +6,10 @@ FROM python:3.13-slim
 #    Todos os comandos subsequentes (COPY, RUN, CMD) serão executados a partir deste diretório.
 WORKDIR /app
 
+# Define a variável de ambiente PYTHONPATH.
+# Isto informa ao Python para procurar módulos a partir do diretório /app (a raiz).
+ENV PYTHONPATH=/app
+
 # 3. Copiar Dependências: Copia o arquivo requirements.txt da sua máquina local para
 #    o diretório de trabalho (/app) dentro do contêiner.
 COPY requirements.txt .
