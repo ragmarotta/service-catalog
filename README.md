@@ -2,10 +2,11 @@
 
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-18.2.0-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-24-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
-[![Nginx](https://img.shields.io/badge/Nginx-1.21-269539?style=for-the-badge&logo=nginx)](https://www.nginx.com/)
+[![Nginx](https://img.shields.io/badge/Nginx-1.29-269539?style=for-the-badge&logo=nginx)](https://www.nginx.com/)
 
 Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas dependências, exibindo todo o ciclo de vida através de um mapa de relacionamentos interativo e uma timeline de eventos.
 
@@ -63,10 +64,10 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 
 | Camada          | Tecnologia              | Descrição                                                                                          |
 | :-------------- | :---------------------- | :------------------------------------------------------------------------------------------------- |
-| **Frontend** | **React 18** | Construído com componentes funcionais e Hooks para uma UI reativa e moderna.                       |
-|                 | **ReactFlow** | Utilizado para a renderização e interatividade do mapa de serviços.                                |
+| **Frontend** | **React 19** | Construído com componentes funcionais e Hooks para uma UI reativa e moderna.                       |
+|                 | **ReactFlow 11** | Utilizado para a renderização e interatividade do mapa de serviços.                                |
 |                 | **Tailwind CSS** | Framework CSS "utility-first" para uma estilização rápida e responsiva.                            |
-|                 | **Nginx** | Servidor web de alta performance que serve a aplicação React e atua como proxy reverso para a API. |
+|                 | **Nginx 1.29** | Servidor web de alta performance que serve a aplicação React e atua como proxy reverso para a API. |
 | **Backend** | **Python 3.13** | Linguagem principal para a lógica de negócio da API.                                               |
 |                 | **FastAPI** | Framework web moderno e de alta performance para a construção da API RESTful.                      |
 |                 | **Pydantic** | Utilizado para validação de dados, serialização e geração automática da documentação da API.       |
@@ -74,6 +75,7 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 | **Base de Dados**| **MongoDB** | Banco de dados NoSQL, ideal para a estrutura flexível e hierárquica dos recursos.                  |
 |                 | **Motor** | Driver assíncrono oficial para interagir com o MongoDB a partir do FastAPI.                        |
 | **Containerização** | **Docker & Docker Compose** | A aplicação inteira (frontend, backend, base de dados) é executada em contêineres isolados. |
+| **Ambiente de Build** | **Node.js 24** | Utilizado para construir a aplicação React para produção. |
 
 ## Como Executar o Projeto
 
@@ -118,8 +120,8 @@ docker-compose up --build
 
 **Acessos:**
 
--   **Aplicação Frontend**: [http://localhost:3000](http://localhost:3000)
--   **Documentação da API (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+-   **Aplicação Frontend**: `http://localhost:3000`
+-   **Documentação da API (Swagger)**: `http://localhost:8000/docs`
 
 **Credenciais Padrão:**
 
@@ -133,7 +135,7 @@ docker-compose down
 
 ## Documentação da API
 
-A documentação completa e interativa da API é gerada automaticamente pelo FastAPI e está disponível em [http://localhost:8000/docs](http://localhost:8000/docs). Abaixo está um resumo dos principais endpoints.
+A documentação completa e interativa da API é gerada automaticamente pelo FastAPI e está disponível em `http://localhost:8000/docs`. Abaixo está um resumo dos principais endpoints.
 
 ### Autenticação
 
