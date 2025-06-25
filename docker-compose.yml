@@ -1,0 +1,64 @@
+# Seção que define todos os serviços (contêineres) da aplicação.
+services:
+  # Serviço do Backend (API em Python/FastAPI)
+  backend:
+    # Constrói a imagem Docker a partir do Dockerfile localizado na pasta ./backend.
+    build: ./backend
+    container_name: service_catalog_backend
+    # Comando para iniciar a aplicação dentro do contêiner.
+    # Uvicorn é o servidor ASGI que roda a nossa aplicação FastAPI.
+    # --host 0.0.0.0 torna a API acessível de fora do contêiner.
+    # --reload reinicia o servidor automaticamente quando há alterações no código (ótimo para desenvolvimento).
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # "Monta" a pasta local ./backend para dentro de /app no contêiner.
+    # Isso permite que as alterações no código local reflitam instantaneamente no contêiner.
+    volumes:
+      - ./backend:/app
+    # Mapeia a porta 8000 do contêiner para a porta 8000 da sua máquina local.
+    ports:
+      - "8000:8000"
+    # Carrega as variáveis de ambiente a partir do arquivo .env na pasta do backend.
+    env_file:
+      - ./backend/.env
+    # Garante que o serviço do MongoDB inicie antes do backend.
+    depends_on:
+      - mongo
+    # Conecta este serviço à rede 'app-network', permitindo a comunicação com os outros serviços.
+    networks:
+      - app-network
+
+  # Serviço do Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: service_catalog_frontend
+    ports:
+      - "3000:80" # Mapeia a porta 80 do Nginx para a porta 3000 da sua máquina.
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # Serviço do Banco de Dados (MongoDB)
+  mongo:
+    # Usa a imagem oficial do MongoDB.
+    image: mongo:latest
+    container_name: service_catalog_mongo
+    ports:
+      - "27017:27017"
+    # Garante que os dados do MongoDB persistam mesmo se o contêiner for removido.
+    # O volume 'mongo-data' é definido na seção 'volumes' abaixo.
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+# Seção que declara os volumes nomeados para persistência de dados.
+volumes:
+  mongo-data:
+
+# Seção que define a rede customizada para a comunicação entre os contêineres.
+networks:
+  app-network:
+    driver: bridge # O driver padrão para redes de um único host.

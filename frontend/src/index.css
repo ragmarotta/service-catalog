@@ -1,0 +1,17 @@
+/* Injeta as classes base, de componentes e utilitárias do Tailwind CSS.
+   Esta é a forma padrão de incluir o Tailwind em um projeto. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Você pode adicionar estilos globais personalizados aqui, se necessário.
+   Por exemplo, para o corpo da página. */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f3f4f6; /* bg-gray-100 */
+}
