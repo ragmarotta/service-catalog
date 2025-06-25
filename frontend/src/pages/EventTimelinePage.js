@@ -3,12 +3,10 @@ import apiClient from '../services/api';
 import { XCircleIcon } from '@heroicons/react/24/solid';
 
 // --- Componente: Multi-Select Dropdown ---
-// Um seletor customizado para filtrar múltiplos tipos de eventos.
 const MultiSelectDropdown = ({ options, selectedOptions, onChange, placeholder = "Selecione os tipos..." }) => {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef(null);
 
-    // Fecha o dropdown se o utilizador clicar fora dele.
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (ref.current && !ref.current.contains(event.target)) {
@@ -81,16 +79,13 @@ const EventTimelinePage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Estado para as cores geradas dinamicamente
     const [eventTypeColors, setEventTypeColors] = useState({});
 
-    // Paleta de cores para ser usada na geração dinâmica
     const COLOR_PALETTE = [
         'bg-sky-500', 'bg-purple-500', 'bg-amber-500', 'bg-indigo-500', 
         'bg-red-500', 'bg-green-500', 'bg-pink-500', 'bg-teal-500'
     ];
     
-    // Busca a lista de recursos disponíveis ao carregar a página
     useEffect(() => {
         const fetchResources = async () => {
             try {
@@ -106,7 +101,6 @@ const EventTimelinePage = () => {
         fetchResources();
     }, []);
 
-    // Função para buscar a timeline de eventos e gerar os tipos e cores dinamicamente
     const fetchTimeline = useCallback(async () => {
         if (!selectedResource) {
             setEvents([]);
@@ -124,7 +118,6 @@ const EventTimelinePage = () => {
             const response = await apiClient.get(`/resources/${selectedResource}/timeline?${params.toString()}`);
             setEvents(response.data);
 
-            // Gera os tipos de evento e as cores dinamicamente a partir da resposta
             if (response.data.length > 0) {
                 const uniqueTypes = [...new Set(response.data.map(event => event.event_type))].sort();
                 setAvailableEventTypes(uniqueTypes);
@@ -135,10 +128,8 @@ const EventTimelinePage = () => {
                 });
                 setEventTypeColors(newColors);
 
-                // Garante que os tipos de evento selecionados ainda sejam válidos
                 setSelectedEventTypes(prev => prev.filter(t => uniqueTypes.includes(t)));
             } else {
-                // Se não houver eventos, limpa as listas
                 setAvailableEventTypes([]);
                 setEventTypeColors({});
                 setSelectedEventTypes([]);
@@ -156,16 +147,35 @@ const EventTimelinePage = () => {
         fetchTimeline();
     }, [fetchTimeline]);
     
+    /**
+     * Formata uma string de data ISO (que vem da API em UTC) para o fuso horário de São Paulo.
+     * @param {string} isoString - A data no formato ISO 8601 (ex: "2023-10-27T18:30:00Z").
+     * @returns {string} A data e hora formatadas para pt-BR no fuso de São Paulo.
+     */
     const formatDateTime = (isoString) => {
         if (!isoString) return 'Data indisponível';
+
         try {
+            // 1. Cria um objeto Date a partir da string ISO. O JavaScript interpreta
+            //    corretamente a string como um momento no tempo universal (UTC).
             const date = new Date(isoString);
-            return new Intl.DateTimeFormat('pt-BR', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: false, timeZone: 'America/Sao_Paulo',
-            }).format(date);
+
+            // 2. Define as opções de formatação, especificando o fuso horário alvo.
+            const options = {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'America/Sao_Paulo',
+            };
+
+            // 3. Usa a API de Internacionalização para formatar a data, que é mais robusta.
+            return new Intl.DateTimeFormat('pt-BR', options).format(date);
         } catch (e) {
+            console.error("Erro ao formatar data:", e, "Input:", isoString);
             return 'Data inválida';
         }
     };

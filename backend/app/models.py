@@ -1,14 +1,10 @@
 # models.py
 """
 Define os modelos de dados Pydantic que representam as entidades da aplicação.
-
-Estes modelos são usados internamente para estruturar os dados que são
-armazenados e manipulados no banco de dados. Eles fornecem tipagem estática
-e validação, mas não são diretamente expostos na API (para isso, usamos os 'schemas').
 """
-from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, BeforeValidator, ConfigDict, field_validator
 from typing import List, Optional, Annotated
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 
 # --- Tipo Personalizado para ObjectId do MongoDB ---
@@ -35,8 +31,18 @@ class Tag(BaseModel):
 class Event(BaseModel):
     """Representa um evento ocorrido com um recurso, com tipo, data e mensagem."""
     event_type: str = Field(..., description="Tipo do evento (ex: DEPLOY, BUILD, RESTART)")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     message: Optional[str] = None
+
+    # A correção está aqui: Este validador garante que, ao ler a data do MongoDB,
+    # ela seja sempre tratada como um datetime ciente do fuso horário UTC.
+    @field_validator('timestamp', mode='before')
+    @classmethod
+    def set_timezone_to_utc(cls, v):
+        """Se a data for 'ingénua' (sem fuso), assume que é UTC e torna-a 'ciente'."""
+        if isinstance(v, datetime) and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
 
 class ResourceBase(BaseModel):
     """Modelo base com os campos comuns de um Recurso."""
@@ -48,27 +54,19 @@ class ResourceBase(BaseModel):
     related_resources: List[str] = Field([], description="Lista de IDs de recursos relacionados")
 
 class ResourceInDB(ResourceBase):
-    """
-    Representa um Recurso da forma como ele é armazenado no MongoDB.
-    Herda de ResourceBase e adiciona campos específicos do banco de dados, como o 'id'.
-    """
-    # O Pydantic mapeia o campo '_id' do MongoDB para o atributo 'id' do modelo.
+    """Representa um Recurso da forma como ele é armazenado no MongoDB."""
     id: PyObjectId = Field(..., alias="_id")
     events: List[Event] = []
 
     class Config:
-        """Configuração do modelo Pydantic."""
-        # Permite que o Pydantic popule o modelo usando o alias (ex: '_id').
         populate_by_name = True
-        # Necessário para que o Pydantic aceite tipos que não são JSON padrão, como ObjectId.
         arbitrary_types_allowed = True
-        # Define um 'encoder' customizado para serializar ObjectId para string em saídas JSON.
         json_encoders = {ObjectId: str}
 
 class UserBase(BaseModel):
     """Modelo base com os campos comuns de um Utilizador."""
     username: str
-    email: EmailStr  # Usa validação de e-mail do Pydantic.
+    email: EmailStr
     full_name: Optional[str] = None
     role: str = Field("visualizador", description="Pode ser 'administrador', 'usuario', 'visualizador'")
 
@@ -77,10 +75,7 @@ class UserCreate(UserBase):
     password: str
 
 class UserInDB(UserBase):
-    """
-    Representa um Utilizador da forma como ele é armazenado no MongoDB.
-    Adiciona o 'id', a senha hasheada e o status 'disabled'.
-    """
+    """Representa um Utilizador da forma como ele é armazenado no MongoDB."""
     id: PyObjectId = Field(..., alias="_id")
     hashed_password: str
     disabled: bool = False
@@ -92,10 +87,10 @@ class UserInDB(UserBase):
         json_encoders = {ObjectId: str}
 
 class Token(BaseModel):
-    """Modelo para a resposta do endpoint de login, representando um token de acesso JWT."""
+    """Modelo para a resposta do endpoint de login."""
     access_token: str
     token_type: str
 
 class TokenData(BaseModel):
-    """Modelo para os dados contidos dentro de um token JWT, usado para validação."""
+    """Modelo para os dados contidos dentro de um token JWT."""
     username: Optional[str] = None
