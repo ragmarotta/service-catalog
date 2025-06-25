@@ -9,12 +9,10 @@ limpas e focadas na lógica da API, sem se preocuparem com os detalhes do banco 
 from bson import ObjectId
 from typing import List, Optional
 from .database import get_database
-# Corrigido: A importação de 'schemas' vem antes dos modelos para resolver o ciclo.
 from . import schemas
-# Corrigido: Importações de modelos foram ajustadas para serem mais específicas.
 from .models import Event, UserInDB, ResourceInDB
 from .security import get_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 
 # --- Funções de conveniência para obter coleções ---
 def get_resource_collection():
@@ -25,11 +23,12 @@ def get_user_collection():
     """Retorna a coleção 'users' do MongoDB."""
     return get_database().get_collection("users")
 
-
 # --- CRUD para Recursos ---
-
 async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
-    """Cria um novo documento de recurso no banco de dados."""
+    """
+    Cria um novo documento de recurso no banco de dados.
+    Converte os IDs de string para ObjectId antes de inserir.
+    """
     resource_dict = resource.model_dump()
     resource_dict["events"] = []
     if "related_resources" in resource_dict:
@@ -41,7 +40,10 @@ async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
     return ResourceInDB(**created_resource_data)
 
 async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
-    """Busca um único recurso pelo seu ID."""
+    """
+    Busca um único recurso pelo seu ID.
+    Converte os IDs de recursos relacionados para string antes de retornar.
+    """
     if not ObjectId.is_valid(resource_id):
         return None
     resource_data = await get_resource_collection().find_one({"_id": ObjectId(resource_id)})
@@ -52,7 +54,10 @@ async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
     return None
 
 async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = None) -> List[ResourceInDB]:
-    """Busca todos os recursos, com filtros opcionais por nome e tags."""
+    """
+    Busca todos os recursos, com filtros opcionais por nome e tags.
+    Retorna uma lista de objetos Pydantic `ResourceInDB`.
+    """
     query = {}
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
@@ -64,7 +69,6 @@ async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = No
                 tag_list.append({"key": key, "value": {"$regex": value, "$options": "i"}})
         if tag_list:
             query["tags"] = {"$elemMatch": {"$or": tag_list}}
-            
     resources = []
     cursor = get_resource_collection().find(query)
     async for resource_data in cursor:
@@ -77,7 +81,7 @@ async def update_resource(resource_id: str, resource_data: schemas.ResourceUpdat
     """Atualiza um documento de recurso existente no banco de dados."""
     if not ObjectId.is_valid(resource_id):
         return None
-    update_data = resource_data.model_dump(exclude_unset=True) 
+    update_data = resource_data.model_dump(exclude_unset=True) # Apenas atualiza campos fornecidos
     if "related_resources" in update_data and update_data["related_resources"] is not None:
         update_data["related_resources"] = [ObjectId(rid) for rid in update_data["related_resources"] if ObjectId.is_valid(rid)]
     if len(update_data) >= 1:
@@ -101,21 +105,26 @@ async def delete_resource(resource_id: str) -> bool:
     """Deleta um recurso e remove as suas referências de outros recursos."""
     if not ObjectId.is_valid(resource_id):
         return False
+    # Remove as referências deste recurso em outros documentos.
     await get_resource_collection().update_many({"related_resources": ObjectId(resource_id)}, {"$pull": {"related_resources": ObjectId(resource_id)}})
     delete_result = await get_resource_collection().delete_one({"_id": ObjectId(resource_id)})
     return delete_result.deleted_count > 0
 
+# --- CRUD para Eventos ---
 async def add_event_to_resource(resource_id: str, event: schemas.EventCreate) -> Optional[ResourceInDB]:
     """Adiciona um evento ao array 'events' de um documento de recurso."""
     if not ObjectId.is_valid(resource_id):
         return None
     event_dict = event.model_dump()
-    event_dict['timestamp'] = datetime.utcnow()
-    await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$push": {"events": event_dict}})
+    # Usa um timestamp ciente do fuso horário UTC para consistência.
+    event_dict['timestamp'] = datetime.now(timezone.utc)
+    await get_resource_collection().update_one(
+        {"_id": ObjectId(resource_id)},
+        {"$push": {"events": event_dict}}
+    )
     return await get_resource(resource_id)
 
 # --- CRUD para Utilizadores ---
-
 async def get_user_by_username(username: str) -> Optional[UserInDB]:
     """Busca um único utilizador pelo seu nome de utilizador."""
     user_data = await get_user_collection().find_one({"username": username})
