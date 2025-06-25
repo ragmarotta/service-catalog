@@ -157,6 +157,6 @@ async def get_event_timeline(resource_id: str, start_date: Optional[datetime] = 
 @router.get("/meta/config", response_model=dict, dependencies=[Depends(require_role(["administrador", "usuario", "visualizador"]))])
 async def get_app_config():
     """Retorna dados de configuração para o frontend, como tipos de eventos e chaves de tags existentes."""
-    event_types = ["DEPLOY", "BUILD", "RESTART", "UPDATE", "DOWN", "UP", "INFO", "WARNING", "ERROR", "DISASTER"]
+    event_types = ["DEPLOY", "BUILD", "RESTART", "UPDATE", "DOWN", "UP", "INFO", "WARNING", "ERROR", "CRITICAL", "DISASTER"]
     all_tags = await get_resource_collection().distinct("tags.key")
     return {"event_types": event_types, "tag_keys": all_tags}
