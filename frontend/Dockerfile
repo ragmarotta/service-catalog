@@ -1,7 +1,7 @@
 # --- ESTÁGIO 1: Build (Construção) ---
 # O objetivo deste estágio é compilar o código React para produção.
 # Usamos uma imagem oficial do Node.js como base, que contém todas as ferramentas (npm) necessárias.
-FROM node:16-alpine as build
+FROM node:24-alpine as build
 
 # Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
@@ -29,7 +29,7 @@ RUN npm run build
 # --- ESTÁGIO 2: Production (Produção) ---
 # O objetivo deste estágio é servir os arquivos estáticos gerados no estágio anterior.
 # Usamos uma imagem oficial e super leve do Nginx, um servidor web de alta performance.
-FROM nginx:1.21-alpine
+FROM nginx:1.29-alpine
 
 # Remove o arquivo de configuração padrão do Nginx para usarmos o nosso.
 RUN rm /etc/nginx/conf.d/default.conf
