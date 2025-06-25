@@ -20,6 +20,8 @@ Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas d
   - [Configuração do Ambiente](#configuração-do-ambiente)
   - [Iniciando a Aplicação](#iniciando-a-aplicação)
 - [Executando os Testes](#executando-os-testes)
+  - [Testes do Backend](#testes-do-backend)
+  - [Testes do Frontend](#testes-do-frontend)
 - [Documentação da API](#documentação-da-api)
   - [Autenticação](#autenticação)
   - [Recursos (Resources)](#recursos-resources)
@@ -77,7 +79,7 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 |                 | **Motor** | Driver assíncrono oficial para interagir com o MongoDB a partir do FastAPI.                        |
 | **Containerização** | **Docker & Docker Compose** | A aplicação inteira (frontend, backend, base de dados) é executada em contêineres isolados. |
 | **Ambiente de Build** | **Node.js 24** | Utilizado para construir a aplicação React para produção. |
-| **Testes** | **Pytest** | Framework para a execução dos testes unitários do backend. |
+| **Testes** | **Pytest**, **Jest** | Frameworks para execução de testes unitários do backend e frontend, respetivamente. |
 
 ## Como Executar o Projeto
 
@@ -137,15 +139,29 @@ docker-compose down
 
 ## Executando os Testes
 
-Este projeto inclui uma suíte de testes unitários para o backend, utilizando `pytest`. Os testes são executados num ambiente isolado com uma base de dados em memória (`mongomock`), garantindo que não afetam os dados reais.
+Este projeto inclui suítes de testes unitários tanto para o backend quanto para o frontend. Os testes são executados em ambientes isolados para garantir a fiabilidade.
 
-Para executar a suíte de testes completa, use o serviço `backend-tests` definido no `docker-compose.yml`:
+### Testes do Backend
+
+A suíte de testes do backend utiliza `pytest` e uma base de dados em memória (`mongomock`).
+
+**Para executar a suíte de testes do backend:**
 
 ```bash
 docker-compose up backend-tests
 ```
 
-Este comando irá construir a imagem, iniciar o contentor, executar os testes e parar. Se algum teste falhar, o processo será interrompido com um erro.
+### Testes do Frontend
+
+A suíte de testes do frontend utiliza `Jest` e `React Testing Library`, com as chamadas à API sendo simuladas (mockadas) para garantir testes rápidos e isolados da UI.
+
+**Para executar a suíte de testes do frontend:**
+
+```bash
+docker-compose up frontend-tests
+```
+
+Em ambos os casos, se todos os testes passarem, o comando terminará com sucesso. Se algum teste falhar, o processo será interrompido com um erro.
 
 ## Documentação da API
 

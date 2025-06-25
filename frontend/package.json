@@ -44,6 +44,14 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
     "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.39"
+    "postcss": "^8.4.39",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2"
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "/node_modules/(?!axios)/"
+    ]
   }
 }

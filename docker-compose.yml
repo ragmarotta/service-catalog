@@ -27,6 +27,7 @@ services:
     networks:
       - app-network
 
+  #Serviço para executar os testes do backend
   backend-tests:
     build: ./backend # Usa o mesmo Dockerfile do backend
     container_name: service_catalog_backend_tests
@@ -54,6 +55,16 @@ services:
       - backend
     networks:
       - app-network
+
+  #Serviço para executar os testes do frontend
+  frontend-tests:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    container_name: service_catalog_frontend_tests
+    # O comando agora é definido no CMD do Dockerfile.test,
+    # então não é mais necessário aqui, mas mantê-lo não causa problemas.
+    command: ["npm", "test", "--", "--watchAll=false"]
 
   # Serviço do Banco de Dados (MongoDB)
   mongo:

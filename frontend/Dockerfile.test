@@ -1,0 +1,18 @@
+# Usa a imagem do Node.js como base, que contém o npm.
+FROM node:24-alpine
+
+# Define o diretório de trabalho.
+WORKDIR /app
+
+# Copia os ficheiros de dependências.
+COPY package.json ./
+
+# Instala todas as dependências, incluindo as de desenvolvimento necessárias para os testes.
+RUN npm install
+
+# Copia todo o código-fonte da aplicação e dos testes.
+COPY . .
+
+# Define o comando padrão que será executado quando este contêiner iniciar.
+# Ele executa os testes uma vez e sai.
+CMD ["npm", "test", "--", "--watchAll=false"]
