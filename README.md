@@ -183,7 +183,8 @@ A documentação completa e interativa da API está disponível em `http://local
 | `DELETE`| `/api/resources/{id}`            | Exclui um único recurso.                                   |
 | `POST` | `/api/resources/{id}/clone`       | Clona um recurso existente.                                |
 | `GET`  | `/api/resources/{id}/timeline`    | Obtém a timeline de eventos de um recurso.                 |
-| `POST` | `/api/resources/{id}/events`      | Adiciona um novo evento a um recurso.                      |
+| `POST` | `/api/resources/{id}/events`      | Adiciona um novo evento a um recurso pelo seu ID.          |
+| `POST` | `/api/resources/by-name/{name}/events`| **(NOVO)** Adiciona um evento a um recurso pelo seu nome.  |
 | `GET`  | `/api/resources/map`              | Obtém os dados formatados para o mapa de serviços.         |
 | `GET`  | `/api/meta/config`                | Obtém dados de configuração para o frontend.               |
 

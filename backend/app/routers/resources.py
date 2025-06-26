@@ -166,6 +166,25 @@ async def add_event(resource_id: str, event: schemas.EventCreate):
         raise HTTPException(status_code=404, detail="Resource not found")
     return schemas.ResourceOut.model_validate(resource, from_attributes=True)
 
+@router.post("/resources/by-name/{resource_name}/events", response_model=schemas.ResourceOut, dependencies=[Depends(require_role(["administrador", "usuario"]))])
+async def add_event_by_name(resource_name: str, event: schemas.EventCreate):
+    """
+    Adiciona um novo evento ao histórico de um recurso, buscando-o pelo seu nome.
+    Útil para automações e scripts onde o nome é mais acessível que o ID.
+    """
+    # 1. Busca o recurso pelo nome para obter o seu ID.
+    resource = await crud.get_resource_by_name(resource_name)
+    if resource is None:
+        raise HTTPException(status_code=404, detail=f"Recurso com o nome '{resource_name}' não foi encontrado.")
+    
+    # 2. Usa o ID encontrado para chamar a função CRUD existente.
+    updated_resource = await crud.add_event_to_resource(str(resource.id), event)
+    if updated_resource is None:
+        # Esta verificação é redundante se a anterior passou, mas é uma boa prática.
+        raise HTTPException(status_code=404, detail="Resource not found after update attempt.")
+
+    return schemas.ResourceOut.model_validate(updated_resource, from_attributes=True)
+
 @router.get("/resources/{resource_id}/timeline", response_model=List[schemas.Event], dependencies=[Depends(require_role(["administrador", "usuario", "visualizador"]))])
 async def get_event_timeline(resource_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None):
     """Retorna a timeline de eventos para um recurso, com filtros opcionais de data."""
