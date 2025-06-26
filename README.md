@@ -50,9 +50,10 @@ A aplicação é totalmente conteinerizada com Docker, garantindo um setup de de
     -   CRUD completo (Criar, Ler, Atualizar, Excluir) para recursos.
     -   Funcionalidade de **clonagem** para agilizar o cadastro de serviços similares.
     -   Listagem tabular com filtros avançados e exibição de nomes de pais/filhos.
+    -   Ações em massa, como exclusão de múltiplos recursos e exportação para JSON.
 -   **Timeline de Eventos**:
     -   Histórico detalhado de todos os eventos (`DEPLOY`, `BUILD`, etc.) para cada recurso.
-    -   Filtros por intervalo de datas para auditoria e análise de incidentes.
+    -   Filtros por intervalo de datas e por tipo de evento.
 -   **Controle de Acesso por Permissões (RBAC)**:
     -   **Administrador**: Controlo total sobre a aplicação, incluindo gestão de utilizadores.
     -   **Utilizador**: Pode criar, editar e gerir recursos.
@@ -180,9 +181,10 @@ A documentação completa e interativa da API é gerada automaticamente pelo Fas
 | :----- | :-------------------------------- | :--------------------------------------------------------- |
 | `GET`  | `/api/resources`                  | Lista todos os recursos, com filtros e relações (pais/filhos). |
 | `POST` | `/api/resources`                  | Cria um novo recurso.                                      |
+| `DELETE`| `/api/resources`                 | **(NOVO)** Exclui múltiplos recursos com base numa lista de IDs. |
 | `GET`  | `/api/resources/{id}`             | Obtém os detalhes de um recurso específico.                |
 | `PUT`  | `/api/resources/{id}`             | Atualiza um recurso existente.                             |
-| `DELETE`| `/api/resources/{id}`            | Exclui um recurso.                                         |
+| `DELETE`| `/api/resources/{id}`            | Exclui um único recurso.                                   |
 | `POST` | `/api/resources/{id}/clone`       | Clona um recurso existente.                                |
 | `GET`  | `/api/resources/{id}/timeline`    | Obtém a timeline de eventos de um recurso.                 |
 | `POST` | `/api/resources/{id}/events`      | Adiciona um novo evento a um recurso.                      |

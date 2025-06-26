@@ -7,7 +7,7 @@ Ele abstrai a lógica de acesso ao banco, permitindo que as rotas (routers) perm
 limpas e focadas na lógica da API, sem se preocuparem com os detalhes do banco de dados.
 """
 from bson import ObjectId
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from .database import get_database
 from . import schemas
 from .models import Event, UserInDB, ResourceInDB
@@ -22,6 +22,17 @@ def get_resource_collection():
 def get_user_collection():
     """Retorna a coleção 'users' do MongoDB."""
     return get_database().get_collection("users")
+
+async def get_resource_by_name(name: str) -> Optional[ResourceInDB]:
+    """
+    Busca um único recurso pelo seu nome (case-insensitive).
+    """
+    resource_data = await get_resource_collection().find_one({"name": {"$regex": f"^{name}$", "$options": "i"}})
+    if resource_data:
+        if 'related_resources' in resource_data:
+            resource_data['related_resources'] = [str(res_id) for res_id in resource_data['related_resources']]
+        return ResourceInDB(**resource_data)
+    return None
 
 # --- CRUD para Recursos ---
 async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
@@ -38,6 +49,58 @@ async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
     if 'related_resources' in created_resource_data:
         created_resource_data['related_resources'] = [str(res_id) for res_id in created_resource_data['related_resources']]
     return ResourceInDB(**created_resource_data)
+
+async def import_resources(resources_to_import: List[schemas.ResourceImport]) -> Dict[str, Any]:
+    """
+    Importa uma lista de recursos, criando novos ou atualizando existentes.
+    
+    A importação é feita em duas passagens para lidar corretamente com as relações:
+    1. Cria ou atualiza os dados básicos de cada recurso (nome, descrição, tags) e
+       constrói um mapa de nomes para os IDs gerados/existentes.
+    2. Itera novamente sobre a lista para definir as relações ('related_resources')
+       usando o mapa de IDs, garantindo que mesmo listas vazias sobrescrevam as existentes.
+    """
+    summary = {"created": 0, "updated": 0, "errors": []}
+    name_to_id_map: Dict[str, str] = {}
+    
+    # Passagem 1: Criar/atualizar recursos básicos e construir o mapa nome -> ID
+    for index, res_import in enumerate(resources_to_import):
+        try:
+            # Prepara os dados, mas ignora as relações por enquanto
+            resource_payload = res_import.model_dump(exclude={'related_resources'})
+            
+            existing_resource = await get_resource_by_name(res_import.name)
+            if existing_resource:
+                update_schema = schemas.ResourceUpdate(**resource_payload)
+                updated_resource = await update_resource(str(existing_resource.id), update_schema)
+                name_to_id_map[res_import.name] = str(updated_resource.id)
+                summary["updated"] += 1
+            else:
+                create_schema = schemas.ResourceCreate(**resource_payload)
+                new_resource = await create_resource(create_schema)
+                name_to_id_map[res_import.name] = str(new_resource.id)
+                summary["created"] += 1
+        except Exception as e:
+            summary["errors"].append(f"Item '{res_import.name}': {str(e)}")
+
+    # Passagem 2: Atualizar as relações ('related_resources')
+    for res_import in resources_to_import:
+        res_name = res_import.name
+        res_id = name_to_id_map.get(res_name)
+        if not res_id:
+            continue
+            
+        try:
+            # Converte os nomes dos filhos para os seus respectivos IDs
+            related_ids = [name_to_id_map[name] for name in res_import.related_resources if name in name_to_id_map]
+            
+            # Corrigido: Atualiza sempre as relações, mesmo que a lista de IDs seja vazia,
+            # para garantir que o estado do ficheiro importado seja refletido.
+            await update_resource(res_id, schemas.ResourceUpdate(related_resources=related_ids))
+        except Exception as e:
+            summary["errors"].append(f"Item '{res_name}': Falha ao atualizar relações - {str(e)}")
+
+    return summary
 
 async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
     """
@@ -109,6 +172,27 @@ async def delete_resource(resource_id: str) -> bool:
     await get_resource_collection().update_many({"related_resources": ObjectId(resource_id)}, {"$pull": {"related_resources": ObjectId(resource_id)}})
     delete_result = await get_resource_collection().delete_one({"_id": ObjectId(resource_id)})
     return delete_result.deleted_count > 0
+
+async def delete_multiple_resources(resource_ids: List[str]) -> int:
+    """Deleta múltiplos recursos baseados numa lista de seus IDs."""
+    # Converte a lista de strings de ID para uma lista de ObjectIds
+    object_ids = [ObjectId(rid) for rid in resource_ids if ObjectId.is_valid(rid)]
+
+    if not object_ids:
+        return 0
+
+    # Remove as referências a estes recursos de outros documentos
+    await get_resource_collection().update_many(
+        {"related_resources": {"$in": object_ids}},
+        {"$pull": {"related_resources": {"$in": object_ids}}}
+    )
+
+    # Deleta os documentos que correspondem aos IDs fornecidos
+    delete_result = await get_resource_collection().delete_many({
+        "_id": {"$in": object_ids}
+    })
+    
+    return delete_result.deleted_count
 
 # --- CRUD para Eventos ---
 async def add_event_to_resource(resource_id: str, event: schemas.EventCreate) -> Optional[ResourceInDB]:

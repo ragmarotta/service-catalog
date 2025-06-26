@@ -3,13 +3,14 @@
 Define todos os endpoints (rotas) da API relacionados ao gerenciamento de Recursos.
 Inclui rotas para criar, listar, atualizar, deletar, clonar, e obter metadados de recursos.
 """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
+import json
 from typing import List, Optional
 from datetime import datetime
 
 from .. import crud, schemas, security
 from ..crud import get_resource_collection 
-from ..models import UserInDB, ResourceInDB
+from ..models import UserInDB
 
 router = APIRouter()
 
@@ -35,7 +36,10 @@ def require_role(required_roles: List[str]):
 
 @router.post("/resources", response_model=schemas.ResourceOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_role(["administrador", "usuario"]))])
 async def create_new_resource(resource: schemas.ResourceCreate):
-    """Cria um novo recurso no banco de dados."""
+    """Cria um novo recurso, validando se o nome já existe."""
+    db_resource = await crud.get_resource_by_name(resource.name)
+    if db_resource:
+        raise HTTPException(status_code=409, detail=f"Um recurso com o nome '{resource.name}' já existe.")
     created_resource = await crud.create_resource(resource)
     return schemas.ResourceOut.model_validate(created_resource, from_attributes=True)
 
@@ -110,11 +114,25 @@ async def get_single_resource(resource_id: str):
 
 @router.put("/resources/{resource_id}", response_model=schemas.ResourceOut, dependencies=[Depends(require_role(["administrador", "usuario"]))])
 async def update_existing_resource(resource_id: str, resource: schemas.ResourceUpdate):
-    """Atualiza os dados de um recurso existente."""
+    """Atualiza um recurso, validando se o novo nome entra em conflito com outro recurso."""
+    if resource.name:
+        db_resource = await crud.get_resource_by_name(resource.name)
+        # Se um recurso com o novo nome foi encontrado, e o seu ID é diferente do que estamos a editar...
+        if db_resource and str(db_resource.id) != resource_id:
+            raise HTTPException(status_code=409, detail=f"Um recurso com o nome '{resource.name}' já existe.")
     updated_resource = await crud.update_resource(resource_id, resource)
     if updated_resource is None:
         raise HTTPException(status_code=404, detail="Resource not found")
     return schemas.ResourceOut.model_validate(updated_resource, from_attributes=True)
+
+@router.post("/resources/import", dependencies=[Depends(require_role(["administrador", "usuario"]))])
+async def import_resources_from_file(resources: List[schemas.ResourceImport]):
+    """
+    Importa recursos a partir de um corpo JSON.
+    O FastAPI valida automaticamente se a entrada é uma lista do tipo ResourceImport.
+    """
+    summary = await crud.import_resources(resources)
+    return summary
 
 @router.post("/resources/{resource_id}/clone", response_model=schemas.ResourceOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_role(["administrador", "usuario"]))])
 async def clone_existing_resource(resource_id: str):
@@ -123,6 +141,14 @@ async def clone_existing_resource(resource_id: str):
     if cloned_resource is None:
         raise HTTPException(status_code=404, detail="Recurso não encontrado para clonar")
     return schemas.ResourceOut.model_validate(cloned_resource, from_attributes=True)
+
+@router.delete("/resources", status_code=status.HTTP_200_OK, dependencies=[Depends(require_role(["administrador"]))])
+async def delete_multiple_resources(payload: schemas.BulkDeleteRequest):
+    """Deleta múltiplos recursos de uma vez. Apenas para administradores."""
+    deleted_count = await crud.delete_multiple_resources(payload.ids)
+    if deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Nenhum dos recursos fornecidos foi encontrado.")
+    return {"detail": f"{deleted_count} recursos foram excluídos com sucesso."}
 
 @router.delete("/resources/{resource_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_role(["administrador"]))])
 async def delete_existing_resource(resource_id: str):

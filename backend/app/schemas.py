@@ -115,3 +115,14 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     disabled: Optional[bool] = None
     password: Optional[str] = None
+
+# Garante que a importação tenha os campos corretos.
+class ResourceImport(BaseModel):
+    name: str
+    description: Optional[str] = None
+    tags: List[Tag] = []
+    # 'related_resources' aqui são os NOMES dos recursos filhos.
+    related_resources: List[str] = []
+
+class BulkDeleteRequest(BaseModel):
+    ids: List[str]
