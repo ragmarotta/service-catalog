@@ -9,7 +9,19 @@ import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
 
 // --- Componente: VisualMap ---
 // Responsável por toda a renderização e interação do diagrama de fluxo.
-const VisualMap = ({ nodes, edges, onNodesChange, onEdgesChange, onNodeClick, onPaneClick, onNodeContextMenu, selectedNode }) => {
+const VisualMap = ({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  onNodeClick,
+  onPaneClick,
+  onNodeContextMenu,
+  onConnect, // Propriedade restaurada para habilitar a criação de ligações
+  nodeTypes, // Propriedade restaurada para usar nós customizados
+  edgeTypes, // Propriedade restaurada para usar arestas customizadas
+  selectedNode
+}) => {
   return (
     <>
       <div className="absolute bottom-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-lg border text-xs">
@@ -25,7 +37,10 @@ const VisualMap = ({ nodes, edges, onNodesChange, onEdgesChange, onNodeClick, on
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
-          onNodeContextMenu={onNodeContextMenu} // Propriedade corrigida/adicionada
+          onNodeContextMenu={onNodeContextMenu}
+          onConnect={onConnect} // Propriedade passada para o ReactFlow
+          nodeTypes={nodeTypes} // Propriedade passada para o ReactFlow
+          edgeTypes={edgeTypes} // Propriedade passada para o ReactFlow
           fitView
           className="bg-gray-50"
       >

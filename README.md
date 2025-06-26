@@ -32,7 +32,7 @@ Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas d
 
 O **Catálogo de Serviços** é uma aplicação web desenhada para arquitetos de software, equipas de DevOps e gestores de TI. A plataforma permite o cadastro de qualquer tipo de serviço (aplicações, servidores, bancos de dados, links de internet, etc.) como um "Recurso". Estes recursos podem ser relacionados entre si num padrão "muitos para muitos", formando uma árvore completa de dependências.
 
-O principal diferencial da aplicação é a capacidade de visualizar estas dependências num mapa de serviços interativo, analisar o caminho crítico de impacto e dependência, e acompanhar o ciclo de vida de cada serviço através de uma timeline de eventos (como `DEPLOY`, `BUILD`, `RESTART`, etc.).
+O principal diferencial da aplicação é a capacidade de visualizar e editar estas dependências diretamente num mapa de serviços interativo, analisar o caminho crítico de impacto, e acompanhar o ciclo de vida de cada serviço através de uma timeline de eventos (como `DEPLOY`, `BUILD`, `RESTART`, etc.).
 
 A aplicação é totalmente conteinerizada com Docker, garantindo um setup de desenvolvimento e produção rápido, consistente e portável.
 
@@ -40,27 +40,24 @@ A aplicação é totalmente conteinerizada com Docker, garantindo um setup de de
 
 -   **Mapa de Serviços Interativo**:
     -   Visualização gráfica de todos os recursos e suas relações.
+    -   **Edição "Drag-and-Drop"** para criar e remover relações de dependência visualmente.
     -   Destaque dinâmico de toda a árvore de dependências (pais) e de impacto (filhos) com um clique.
     -   Menu de contexto para filtrar a visualização e focar no caminho crítico de um serviço.
-    -   Filtros por nome e tags para facilitar a navegação em ambientes complexos.
--   **Exportação para Linguagem DOT**:
-    -   Geração automática de um script no formato [Graphviz DOT](https://graphviz.org/doc/info/lang.html) a partir do mapa de serviços.
-    -   Funcionalidade de "Copiar para a Área de Transferência" para fácil portabilidade.
 -   **Gestão Completa de Recursos**:
-    -   CRUD completo (Criar, Ler, Atualizar, Excluir) para recursos.
+    -   CRUD completo com **validação de nomes únicos** para evitar duplicados.
     -   Funcionalidade de **clonagem** para agilizar o cadastro de serviços similares.
-    -   Listagem tabular com filtros avançados e exibição de nomes de pais/filhos.
-    -   Ações em massa, como exclusão de múltiplos recursos e exportação para JSON.
+    -   Listagem tabular com filtros avançados, ordenação por nome e exibição de nomes de pais/filhos.
+    -   Ações em massa, como exclusão de múltiplos recursos.
+-   **Importação e Exportação**:
+    -   Botões para **exportar** a lista de recursos para um ficheiro JSON.
+    -   Funcionalidade para **importar** recursos a partir de um ficheiro JSON, criando novos ou atualizando existentes.
 -   **Timeline de Eventos**:
-    -   Histórico detalhado de todos os eventos (`DEPLOY`, `BUILD`, etc.) para cada recurso.
-    -   Filtros por intervalo de datas e por tipo de evento.
+    -   Histórico detalhado de todos os eventos para cada recurso, com **cores dinâmicas por tipo**.
+    -   Filtros por intervalo de datas e por múltiplos tipos de evento.
 -   **Controle de Acesso por Permissões (RBAC)**:
     -   **Administrador**: Controlo total sobre a aplicação, incluindo gestão de utilizadores.
     -   **Utilizador**: Pode criar, editar e gerir recursos.
     -   **Visualizador**: Acesso apenas para leitura das informações.
--   **Autenticação Segura**:
-    -   Sistema de login com utilizador e senha.
-    -   Uso de tokens JWT (JSON Web Tokens) para proteger a API.
 
 ## Arquitetura e Tecnologias
 
@@ -104,7 +101,7 @@ Siga os passos abaixo para configurar e executar a aplicação no seu ambiente l
     -   Renomeie ou copie o ficheiro `.env.example` para `.env`.
 
 3.  **Edite o ficheiro `.env`**:
-    -   `SECRET_KEY`: **Obrigatório.** Substitua o valor por uma string longa e aleatória para a segurança dos tokens JWT. Pode usar um gerador online.
+    -   `SECRET_KEY`: **Obrigatório.** Substitua o valor por uma string longa e aleatória para a segurança dos tokens JWT.
     -   `ROOT_USER_PASSWORD`: **Obrigatório.** Defina a senha para o utilizador `root` inicial. **Não coloque a senha em texto plano aqui.** Gere um hash **bcrypt** e cole o hash no ficheiro.
         -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
             ```bash
@@ -121,7 +118,7 @@ docker-compose up --build
 ```
 
 -   O comando `--build` força a reconstrução das imagens Docker na primeira execução ou após alterações nos `Dockerfiles` ou `requirements.txt`.
--   Aguarde até que todos os serviços (`mongo`, `backend`, `frontend`) estejam de pé e a exibir os logs.
+-   Aguarde até que todos os serviços (`mongo`, `backend`, `frontend`) estejam de pé.
 
 **Acessos:**
 
@@ -140,7 +137,7 @@ docker-compose down
 
 ## Executando os Testes
 
-Este projeto inclui suítes de testes unitários tanto para o backend quanto para o frontend. Os testes são executados em ambientes isolados para garantir a fiabilidade.
+Este projeto inclui suítes de testes unitários tanto para o backend quanto para o frontend.
 
 ### Testes do Backend
 
@@ -154,7 +151,7 @@ docker-compose up backend-tests
 
 ### Testes do Frontend
 
-A suíte de testes do frontend utiliza `Jest` e `React Testing Library`, com as chamadas à API sendo simuladas (mockadas) para garantir testes rápidos e isolados da UI.
+A suíte de testes do frontend utiliza `Jest` e `React Testing Library`, com as chamadas à API sendo simuladas (mockadas).
 
 **Para executar a suíte de testes do frontend:**
 
@@ -162,11 +159,9 @@ A suíte de testes do frontend utiliza `Jest` e `React Testing Library`, com as 
 docker-compose up frontend-tests
 ```
 
-Em ambos os casos, se todos os testes passarem, o comando terminará com sucesso. Se algum teste falhar, o processo será interrompido com um erro.
-
 ## Documentação da API
 
-A documentação completa e interativa da API é gerada automaticamente pelo FastAPI e está disponível em `http://localhost:8000/docs`. Abaixo está um resumo dos principais endpoints.
+A documentação completa e interativa da API está disponível em `http://localhost:8000/docs`. Abaixo está um resumo dos principais endpoints.
 
 ### Autenticação
 
@@ -180,10 +175,11 @@ A documentação completa e interativa da API é gerada automaticamente pelo Fas
 | Método | Endpoint                          | Descrição                                                  |
 | :----- | :-------------------------------- | :--------------------------------------------------------- |
 | `GET`  | `/api/resources`                  | Lista todos os recursos, com filtros e relações (pais/filhos). |
-| `POST` | `/api/resources`                  | Cria um novo recurso.                                      |
-| `DELETE`| `/api/resources`                 | **(NOVO)** Exclui múltiplos recursos com base numa lista de IDs. |
+| `POST` | `/api/resources`                  | Cria um novo recurso, validando se o nome é único.         |
+| `POST` | `/api/resources/import`           | Importa recursos a partir de um ficheiro JSON.             |
+| `DELETE`| `/api/resources`                 | Exclui múltiplos recursos com base numa lista de IDs.      |
 | `GET`  | `/api/resources/{id}`             | Obtém os detalhes de um recurso específico.                |
-| `PUT`  | `/api/resources/{id}`             | Atualiza um recurso existente.                             |
+| `PUT`  | `/api/resources/{id}`             | Atualiza um recurso existente, validando se o nome é único.  |
 | `DELETE`| `/api/resources/{id}`            | Exclui um único recurso.                                   |
 | `POST` | `/api/resources/{id}/clone`       | Clona um recurso existente.                                |
 | `GET`  | `/api/resources/{id}/timeline`    | Obtém a timeline de eventos de um recurso.                 |

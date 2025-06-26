@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNodesState, useEdgesState } from 'reactflow';
+import { useNodesState, useEdgesState, addEdge, MarkerType } from 'reactflow';
 import 'reactflow/dist/style.css';
 import apiClient from '../services/api';
 import dagre from 'dagre';
@@ -7,6 +7,9 @@ import dagre from 'dagre';
 // Importa os componentes componentizados
 import VisualMap from '../components/VisualMap';
 import DotLanguageViewer from '../components/DotLanguageViewer';
+import ConfirmationModal from '../components/ConfirmationModal';
+import CustomNode from '../components/CustomNode'; // Necessário para os tipos
+import CustomEdge from '../components/CustomEdge'; // Necessário para os tipos
 import { ArrowsPointingOutIcon, EyeIcon, FunnelIcon } from '@heroicons/react/24/solid';
 
 // --- Componente: Menu de Contexto ---
@@ -14,19 +17,10 @@ const NodeContextMenu = ({ top, left, onFilterParents, onFilterChildren, onReset
   return (
     <div style={{ top, left }} className="absolute z-50 bg-white rounded-md shadow-lg border text-sm" >
       <div className="py-1">
-        <button onClick={onFilterParents} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left">
-            <EyeIcon className="w-4 h-4 text-green-500" />
-            <span>Mostrar Dependentes (Pais)</span>
-        </button>
-        <button onClick={onFilterChildren} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left">
-            <FunnelIcon className="w-4 h-4 text-red-500" />
-            <span>Mostrar Impactados (Filhos)</span>
-        </button>
+        <button onClick={onFilterParents} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><EyeIcon className="w-4 h-4 text-green-500" /><span>Mostrar Dependentes (Pais)</span></button>
+        <button onClick={onFilterChildren} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><FunnelIcon className="w-4 h-4 text-red-500" /><span>Mostrar Impactados (Filhos)</span></button>
         <div className="border-t my-1"></div>
-        <button onClick={onResetFilter} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left">
-            <ArrowsPointingOutIcon className="w-4 h-4 text-gray-500" />
-            <span>Limpar Filtro</span>
-        </button>
+        <button onClick={onResetFilter} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><ArrowsPointingOutIcon className="w-4 h-4 text-gray-500" /><span>Limpar Filtro</span></button>
       </div>
     </div>
   );
@@ -38,6 +32,10 @@ const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 const nodeWidth = 172;
 const nodeHeight = 50;
+
+// Tipos customizados para o ReactFlow
+const nodeTypes = { custom: CustomNode };
+const edgeTypes = { custom: CustomEdge };
 
 const getLayoutedElements = (nodes, edges, direction = 'TB') => {
   dagreGraph.setGraph({ rankdir: direction });
@@ -56,21 +54,18 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 const ServiceMapPage = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  // Estados para guardar a visualização original completa
   const [originalNodes, setOriginalNodes] = useState([]);
   const [originalEdges, setOriginalEdges] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ name: '', tags: '' });
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeTab, setActiveTab] = useState('visual');
   const [dotScript, setDotScript] = useState('');
-  
-  // Estado para o menu de contexto
   const [contextMenu, setContextMenu] = useState(null);
+  const [edgeToDelete, setEdgeToDelete] = useState(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const mapRef = useRef(null);
-
 
   const generateDotScript = (nodesToConvert, edgesToConvert) => {
     let script = 'digraph Services {\n';
@@ -100,12 +95,24 @@ const ServiceMapPage = () => {
         setNodes([]); setEdges([]); setOriginalNodes([]); setOriginalEdges([]); setDotScript('');
         setError("Nenhum recurso encontrado com os filtros aplicados.");
       } else {
-        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(data.nodes, data.edges);
-        const styledEdges = layoutedEdges.map(edge => ({ ...edge, markerEnd: { type: 'ArrowClosed', color: '#6b7280' }, style: { stroke: '#6b7280' } }));
-        setNodes(layoutedNodes);
-        setEdges(styledEdges);
-        setOriginalNodes(layoutedNodes); // Guarda o estado original
-        setOriginalEdges(styledEdges);   // Guarda o estado original
+        const layoutedNodes = data.nodes.map(n => ({...n, type: 'custom'}));
+        const layoutedEdges = data.edges.map(e => ({
+            ...e, 
+            type: 'custom',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#6b7280' },
+            data: { onDelete: (id) => {
+                const edgeFound = layoutedEdges.find(ed => ed.id === id);
+                if (edgeFound) {
+                    setEdgeToDelete(edgeFound);
+                    setIsConfirmModalOpen(true);
+                }
+            }}
+        }));
+        const { nodes: finalNodes, edges: finalEdges } = getLayoutedElements(layoutedNodes, layoutedEdges);
+        setNodes(finalNodes);
+        setEdges(finalEdges);
+        setOriginalNodes(finalNodes);
+        setOriginalEdges(finalEdges);
         setDotScript(generateDotScript(data.nodes, data.edges));
       }
     } catch (err) {
@@ -126,6 +133,25 @@ const ServiceMapPage = () => {
     e.preventDefault();
     fetchMapData();
   };
+  
+  const onConnect = useCallback(async (params) => {
+      const { source, target } = params;
+      if (source === target) return;
+      const connectionExists = edges.some(edge => edge.source === source && edge.target === target);
+      if (connectionExists) return;
+
+      const newEdge = { ...params, id: `${source}-${target}`, type: 'custom', markerEnd: { type: MarkerType.ArrowClosed }};
+      setEdges((eds) => addEdge(newEdge, eds));
+      try {
+          const resourceToUpdate = await apiClient.get(`/resources/${source}`);
+          const updatedRelatedResources = [...resourceToUpdate.data.related_resources, target];
+          await apiClient.put(`/resources/${source}`, { related_resources: updatedRelatedResources });
+          fetchMapData();
+      } catch (err) {
+          setError("Falha ao salvar a nova relação.");
+          setEdges((eds) => eds.filter(e => e.id !== newEdge.id));
+      }
+  }, [edges, setEdges, fetchMapData]);
 
   const getAncestors = useCallback((nodeId, allEdges) => {
     const ancestors = new Set();
@@ -158,19 +184,17 @@ const ServiceMapPage = () => {
   }, []);
 
   const onNodeClick = useCallback((event, clickedNode) => {
-    setContextMenu(null); // Fecha o menu de contexto ao clicar normalmente
+    setContextMenu(null);
     setSelectedNode(clickedNode);
     const ancestors = getAncestors(clickedNode.id, originalEdges);
     const descendants = getDescendants(clickedNode.id, originalEdges);
-    setEdges(currentEdges =>
-      currentEdges.map(edge => {
+    setEdges(originalEdges.map(edge => {
         const isAncestorEdge = ancestors.has(edge.source) && (ancestors.has(edge.target) || edge.target === clickedNode.id);
         const isDescendantEdge = descendants.has(edge.target) && (descendants.has(edge.source) || edge.source === clickedNode.id);
         if (isDescendantEdge) return { ...edge, animated: true, style: { stroke: '#ef4444', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#ef4444' } };
         if (isAncestorEdge) return { ...edge, animated: true, style: { stroke: '#22c55e', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#22c55e' } };
         return { ...edge, animated: false, style: { stroke: '#d1d5db' }, markerEnd: { ...edge.markerEnd, color: '#d1d5db' } };
-      })
-    );
+    }));
   }, [getAncestors, getDescendants, originalEdges, setEdges]);
   
   const onPaneClick = useCallback(() => {
@@ -198,14 +222,14 @@ const ServiceMapPage = () => {
   const handleFilterParents = () => {
     if (!contextMenu) return;
     const parentIds = getAncestors(contextMenu.id, originalEdges);
-    parentIds.add(contextMenu.id); // Inclui o nó selecionado
+    parentIds.add(contextMenu.id);
     filterNodesAndEdges(parentIds);
   };
   
   const handleFilterChildren = () => {
     if (!contextMenu) return;
     const childIds = getDescendants(contextMenu.id, originalEdges);
-    childIds.add(contextMenu.id); // Inclui o nó selecionado
+    childIds.add(contextMenu.id);
     filterNodesAndEdges(childIds);
   };
   
@@ -213,6 +237,23 @@ const ServiceMapPage = () => {
     setNodes(originalNodes);
     setEdges(originalEdges);
     setContextMenu(null);
+  };
+  
+  const handleConfirmEdgeDelete = async () => {
+      if (!edgeToDelete) return;
+      const { id, source, target } = edgeToDelete;
+      try {
+          const resourceToUpdate = await apiClient.get(`/resources/${source}`);
+          const updatedRelatedResources = resourceToUpdate.data.related_resources.filter(resId => resId !== target);
+          await apiClient.put(`/resources/${source}`, { related_resources: updatedRelatedResources });
+          setEdges((eds) => eds.filter((e) => e.id !== id));
+          setOriginalEdges((eds) => eds.filter((e) => e.id !== id));
+      } catch (err) {
+          setError("Falha ao excluir a relação.");
+      } finally {
+          setIsConfirmModalOpen(false);
+          setEdgeToDelete(null);
+      }
   };
 
 
@@ -227,14 +268,8 @@ const ServiceMapPage = () => {
       <div className="p-4 border-b">
           <h1 className="text-xl font-bold text-gray-800">Mapa de Relacionamentos de Serviços</h1>
           <form onSubmit={handleFilterSubmit} className="flex flex-wrap items-end gap-4 mt-4">
-              <div className='flex-grow'>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label>
-                  <input type="text" name="name" id="name" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" />
-              </div>
-              <div className='flex-grow'>
-                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label>
-                  <input type="text" name="tags" id="tags" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" />
-              </div>
+              <div className='flex-grow'><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label><input type="text" name="name" id="name" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" /></div>
+              <div className='flex-grow'><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" /></div>
               <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button>
           </form>
       </div>
@@ -251,7 +286,7 @@ const ServiceMapPage = () => {
         {error && !loading && <div className="absolute inset-0 z-10 flex items-center justify-center text-red-600 p-4 text-center">{error}</div>}
         
         {activeTab === 'visual' ? (
-            <VisualMap nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeClick={onNodeClick} onPaneClick={onPaneClick} onNodeContextMenu={onNodeContextMenu} selectedNode={selectedNode} />
+            <VisualMap nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeClick={onNodeClick} onPaneClick={onPaneClick} onNodeContextMenu={onNodeContextMenu} onConnect={onConnect} nodeTypes={nodeTypes} edgeTypes={edgeTypes} selectedNode={selectedNode} />
         ) : (
             <DotLanguageViewer dotScript={dotScript} />
         )}
@@ -266,6 +301,14 @@ const ServiceMapPage = () => {
             />
         )}
       </div>
+
+       <ConfirmationModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => setIsConfirmModalOpen(false)}
+          onConfirm={handleConfirmEdgeDelete}
+          title="Confirmar Exclusão de Relação"
+          message="Você tem certeza que deseja excluir esta relação de dependência?"
+      />
     </div>
   );
 };
