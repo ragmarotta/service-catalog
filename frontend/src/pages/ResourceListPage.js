@@ -125,7 +125,6 @@ const ResourceListPage = () => {
 
     /**
      * Ordena os recursos localmente para exibição na tabela.
-     * `useMemo` garante que a ordenação só é recalculada se os recursos ou a configuração de ordenação mudarem.
      */
     const sortedResources = useMemo(() => {
         let sortableItems = [...resources];
@@ -133,8 +132,8 @@ const ResourceListPage = () => {
             sortableItems.sort((a, b) => {
                 const valA = a[sortConfig.key] || '';
                 const valB = b[sortConfig.key] || '';
-                if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
-                if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+                if (valA.localeCompare(valB) < 0) return sortConfig.direction === 'ascending' ? -1 : 1;
+                if (valA.localeCompare(valB) > 0) return sortConfig.direction === 'ascending' ? 1 : -1;
                 return 0;
             });
         }
@@ -151,16 +150,10 @@ const ResourceListPage = () => {
         setError('');
         if (resourceToDelete) { // Exclusão individual
             if (!isAdmin) return;
-            try {
-                await apiClient.delete(`/resources/${resourceToDelete.id}`);
-                fetchResources();
-            } catch (err) { setError('Falha ao excluir o recurso.'); }
+            try { await apiClient.delete(`/resources/${resourceToDelete.id}`); fetchResources(); } catch (err) { setError('Falha ao excluir o recurso.'); }
         } else if (selectedResources.length > 0) { // Exclusão em massa
             if (!isAdmin) return;
-            try {
-                await apiClient.delete('/resources', { data: { ids: selectedResources } });
-                fetchResources();
-            } catch (err) { setError('Falha ao excluir os recursos selecionados.'); }
+            try { await apiClient.delete('/resources', { data: { ids: selectedResources } }); fetchResources(); } catch (err) { setError('Falha ao excluir os recursos selecionados.'); }
         }
         closeDeleteModal();
     };
@@ -169,13 +162,8 @@ const ResourceListPage = () => {
         if (!canEdit) return;
         setCloneLoading(resourceId);
         setError('');
-        try {
-            const { data: clonedResource } = await apiClient.post(`/resources/${resourceId}/clone`);
-            navigate(`/resources/edit/${clonedResource.id}`);
-        } catch (err) {
-            setError('Falha ao clonar o recurso.');
-            setCloneLoading(null);
-        }
+        try { const { data: clonedResource } = await apiClient.post(`/resources/${resourceId}/clone`); navigate(`/resources/edit/${clonedResource.id}`); } 
+        catch (err) { setError('Falha ao clonar o recurso.'); setCloneLoading(null); }
     };
 
     const handleExport = () => {
@@ -214,7 +202,7 @@ const ResourceListPage = () => {
         reader.readAsText(file);
         event.target.value = null;
     };
-
+    
     const NameList = ({ names, icon, colorClass }) => {
         if (!names || names.length === 0) return <span className="text-gray-400">-</span>;
         return (<div className="flex flex-col gap-1">{names.map((name, index) => (<div key={index} className={`inline-flex items-center gap-1.5 text-xs text-left ${colorClass}`}>{icon}<span>{name}</span></div>))}</div>);
@@ -225,13 +213,9 @@ const ResourceListPage = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Gerenciamento de Recursos</h1>
                 <div className="flex items-center gap-4">
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
-                    <button onClick={handleImportClick} disabled={isImporting} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50">
-                        {isImporting ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <ArrowUpTrayIcon className="w-5 h-5" />}
-                        <span>{isImporting ? 'Importando...' : 'Importar'}</span>
-                    </button>
+                    {canEdit && (<><input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" /><button onClick={handleImportClick} disabled={isImporting} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50">{isImporting ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <ArrowUpTrayIcon className="w-5 h-5" />}<span>{isImporting ? 'Importando...' : 'Importar'}</span></button></>)}
                     <button onClick={handleExport} className="px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50">Exportar</button>
-                    <Link to="/resources/new" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"><PlusIcon className="w-5 h-5" />Novo</Link>
+                    {canEdit && (<Link to="/resources/new" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"><PlusIcon className="w-5 h-5" />Novo</Link>)}
                 </div>
             </div>
 
@@ -239,17 +223,9 @@ const ResourceListPage = () => {
             {success && <div className="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">{success}</div>}
 
             <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-md bg-gray-50">
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
-                    <input type="text" name="name" id="name" value={filters.name} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: api-principal" />
-                </div>
-                <div>
-                    <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label>
-                    <input type="text" name="tags" id="tags" value={filters.tags} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: env:prod,app:core" />
-                </div>
-                <div className="flex items-end">
-                    <button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button>
-                </div>
+                <div><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label><input type="text" name="name" id="name" value={filters.name} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: api-principal" /></div>
+                <div><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" value={filters.tags} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: env:prod,app:core" /></div>
+                <div className="flex items-end"><button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button></div>
             </form>
             
             {selectedResources.length > 0 && isAdmin && (
@@ -264,9 +240,7 @@ const ResourceListPage = () => {
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600" checked={resources.length > 0 && selectedResources.length === resources.length} ref={input => { if (input) { input.indeterminate = selectedResources.length > 0 && selectedResources.length < resources.length; } }} onChange={handleSelectAll} /></th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <button onClick={() => handleSort('name')} className="flex items-center gap-2 group">Nome{sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? <ArrowUpIcon className="w-4 h-4"/> : <ArrowDownIcon className="w-4 h-4"/>) : (<ChevronUpDownIcon className="w-4 h-4 text-gray-400"/>)}</button>
-                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><button onClick={() => handleSort('name')} className="flex items-center gap-2 group">Nome{sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? <ArrowUpIcon className="w-4 h-4"/> : <ArrowDownIcon className="w-4 h-4"/>) : (<ChevronUpDownIcon className="w-4 h-4 text-gray-400"/>)}</button></th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pais</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Filhos</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tags</th>
@@ -283,18 +257,10 @@ const ResourceListPage = () => {
                                     <td className="px-6 py-4 font-medium text-gray-900">{resource.name}</td>
                                     <td className="px-6 py-4"><NameList names={resource.parents} icon={<ArrowUpIcon className="w-3 h-3" />} colorClass="text-green-700" /></td>
                                     <td className="px-6 py-4"><NameList names={resource.children} icon={<ArrowDownIcon className="w-3 h-3" />} colorClass="text-purple-700" /></td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {resource.tags.map(tag => (
-                                                <button key={`${tag.key}-${tag.value}`} onClick={() => handleTagClick(tag)} title={`Filtrar por ${tag.key}:${tag.value}`} className="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full flex items-center gap-1 hover:bg-blue-200">
-                                                    <TagIcon className="w-3 h-3"/> {tag.key}:{tag.value}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </td>
+                                    <td className="px-6 py-4"><div className="flex flex-wrap gap-1">{resource.tags.map(tag => (<button key={`${tag.key}-${tag.value}`} onClick={() => handleTagClick(tag)} title={`Filtrar por ${tag.key}:${tag.value}`} className="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full flex items-center gap-1 hover:bg-blue-200"><TagIcon className="w-3 h-3"/> {tag.key}:{tag.value}</button>))}</div></td>
                                     <td className="px-6 py-4 text-right text-sm font-medium">
                                         {canEdit && <button onClick={() => handleCloneResource(resource.id)} disabled={cloneLoading === resource.id} className="text-gray-500 hover:text-indigo-600 mr-4 disabled:opacity-50" title="Clonar">{cloneLoading === resource.id ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <DocumentDuplicateIcon className="w-5 h-5"/>}</button>}
-                                        <button onClick={() => navigate(`/resources/edit/${resource.id}`)} className="text-indigo-600 hover:text-indigo-900 mr-4" title="Editar"><PencilIcon className="w-5 h-5"/></button>
+                                        {canEdit && <button onClick={() => navigate(`/resources/edit/${resource.id}`)} className="text-indigo-600 hover:text-indigo-900 mr-4" title="Editar"><PencilIcon className="w-5 h-5"/></button>}
                                         {isAdmin && <button onClick={() => openDeleteModal(resource)} className="text-red-600 hover:text-red-900" title="Excluir"><TrashIcon className="w-5 h-5"/></button>}
                                     </td>
                                 </tr>

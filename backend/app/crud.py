@@ -117,6 +117,19 @@ async def import_resources(resources_to_import: List[schemas.ResourceImport]) ->
 
     return summary
 
+async def clone_resource(resource_id: str) -> Optional[ResourceInDB]:
+    """Clona um recurso, criando uma cópia com um novo nome."""
+    original_resource = await get_resource(resource_id)
+    if not original_resource:
+        return None
+    cloned_data = schemas.ResourceCreate(
+        name=f"{original_resource.name} - Cópia",
+        description=original_resource.description,
+        tags=original_resource.tags,
+        related_resources=original_resource.related_resources,
+    )
+    return await create_resource(cloned_data)
+
 async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
     """
     Busca um único recurso pelo seu ID.
