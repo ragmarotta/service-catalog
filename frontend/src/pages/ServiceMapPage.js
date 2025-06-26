@@ -67,7 +67,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
 const ServiceMapPage = () => {
     // --- Hooks e Estados ---
-    const { user } = useAuth(); // Obtém o utilizador para verificar permissões.
+    const { user } = useAuth();
     const canEdit = user?.role === 'administrador' || user?.role === 'usuario';
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -83,7 +83,15 @@ const ServiceMapPage = () => {
     const [contextMenu, setContextMenu] = useState(null);
     const [edgeToDelete, setEdgeToDelete] = useState(null);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [isMaximized, setIsMaximized] = useState(false);
     const mapRef = useRef(null);
+
+    /**
+     * Alterna o estado de maximização do mapa.
+     */
+    const handleToggleMaximize = () => {
+        setIsMaximized(prev => !prev);
+    };
 
     /**
      * Gera um script na linguagem DOT (Graphviz) a partir dos nós e arestas.
@@ -115,7 +123,7 @@ const ServiceMapPage = () => {
             if (filters.tags) params.append('tags', filters.tags);
             const { data } = await apiClient.get(`/resources/map?${params.toString()}`);
             
-            if (!data || !data.nodes || data.nodes.length === 0) {
+            if (!data || !data.nodes || !data.nodes.length === 0) {
                 setNodes([]); setEdges([]); setOriginalNodes([]); setOriginalEdges([]); setDotScript('');
                 setError("Nenhum recurso encontrado com os filtros aplicados.");
             } else {
@@ -124,15 +132,7 @@ const ServiceMapPage = () => {
                     ...e, 
                     type: 'custom',
                     markerEnd: { type: MarkerType.ArrowClosed, color: '#6b7280' },
-                    data: { 
-                        onDelete: canEdit ? (id) => {
-                            const edgeFound = layoutedEdges.find(ed => ed.id === id);
-                            if (edgeFound) {
-                                setEdgeToDelete(edgeFound);
-                                setIsConfirmModalOpen(true);
-                            }
-                        } : null
-                    }
+                    data: { onDelete: canEdit ? (id) => { const edgeFound = layoutedEdges.find(ed => ed.id === id); if (edgeFound) { setEdgeToDelete(edgeFound); setIsConfirmModalOpen(true); } } : null }
                 }));
                 const { nodes: finalNodes, edges: finalEdges } = getLayoutedElements(layoutedNodes, layoutedEdges);
                 setNodes(finalNodes);
@@ -150,13 +150,11 @@ const ServiceMapPage = () => {
         }
     }, [filters, setNodes, setEdges, canEdit]);
 
-    useEffect(() => {
-        fetchMapData();
-    }, [fetchMapData]);
+    useEffect(() => { fetchMapData(); }, [fetchMapData]);
 
     const handleFilterChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
     const handleFilterSubmit = (e) => { e.preventDefault(); fetchMapData(); };
-
+    
     /**
      * Função chamada quando uma nova conexão é criada pelo utilizador via drag-and-drop.
      * Valida e salva a nova relação.
@@ -183,7 +181,7 @@ const ServiceMapPage = () => {
     }, [canEdit, edges, setEdges, fetchMapData]);
 
     /**
-     * Funções recursivas para encontrar todos os ancestrais (pais) e descendentes (filhos) de um nó.
+     * Encontra todos os ancestrais (pais, avós, etc.) de um nó.
      */
     const getAncestors = useCallback((nodeId, allEdges) => {
         const ancestors = new Set();
@@ -200,6 +198,9 @@ const ServiceMapPage = () => {
         return ancestors;
     }, []);
 
+    /**
+     * Encontra todos os descendentes (filhos, netos, etc.) de um nó.
+     */
     const getDescendants = useCallback((nodeId, allEdges) => {
         const descendants = new Set();
         const queue = [nodeId];
@@ -238,8 +239,9 @@ const ServiceMapPage = () => {
     const onPaneClick = useCallback(() => {
         setSelectedNode(null);
         setContextMenu(null);
+        setNodes(originalNodes);
         setEdges(originalEdges);
-    }, [setEdges, originalEdges]);
+    }, [setEdges, originalEdges, setNodes, originalNodes]);
     
     /**
      * Manipula o clique direito num nó, exibindo o menu de contexto.
@@ -302,38 +304,35 @@ const ServiceMapPage = () => {
     const TabButton = ({ isActive, onClick, children }) => (<button onClick={onClick} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${isActive ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>{children}</button>);
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8rem)] bg-white rounded-lg shadow">
-            <div className="p-4 border-b">
-                <h1 className="text-xl font-bold text-gray-800">Mapa de Relacionamentos de Serviços</h1>
-                <form onSubmit={handleFilterSubmit} className="flex flex-wrap items-end gap-4 mt-4">
-                    <div className='flex-grow'><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label><input type="text" name="name" id="name" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" /></div>
-                    <div className='flex-grow'><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" /></div>
-                    <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button>
-                </form>
-            </div>
-            
-            <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-6 px-4" aria-label="Tabs">
-                    <TabButton isActive={activeTab === 'visual'} onClick={() => setActiveTab('visual')}>Visual</TabButton>
-                    <TabButton isActive={activeTab === 'dot'} onClick={() => setActiveTab('dot')}>Linguagem DOT</TabButton>
-                </nav>
-            </div>
-
+        <div className={isMaximized ? "fixed inset-0 z-40 bg-white" : "flex flex-col h-[calc(100vh-8rem)] bg-white rounded-lg shadow"}>
+            {!isMaximized && (
+                <>
+                    <div className="p-4 border-b">
+                        <h1 className="text-xl font-bold text-gray-800">Mapa de Relacionamentos de Serviços</h1>
+                        <form onSubmit={handleFilterSubmit} className="flex flex-wrap items-end gap-4 mt-4">
+                            <div className='flex-grow'><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label><input type="text" name="name" id="name" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" /></div>
+                            <div className='flex-grow'><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" /></div>
+                            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button>
+                        </form>
+                    </div>
+                    <div className="border-b border-gray-200">
+                        <nav className="-mb-px flex space-x-6 px-4" aria-label="Tabs">
+                            <TabButton isActive={activeTab === 'visual'} onClick={() => setActiveTab('visual')}>Visual</TabButton>
+                            <TabButton isActive={activeTab === 'dot'} onClick={() => setActiveTab('dot')}>Linguagem DOT</TabButton>
+                        </nav>
+                    </div>
+                </>
+            )}
             <div className="flex-grow w-full h-full relative" ref={mapRef}>
                 {loading && <div className="absolute inset-0 z-10 flex items-center justify-center bg-white bg-opacity-75">A carregar...</div>}
                 {error && !loading && <div className="absolute inset-0 z-10 flex items-center justify-center text-red-600 p-4 text-center">{error}</div>}
                 
                 {activeTab === 'visual' ? (
-                    <VisualMap nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeClick={onNodeClick} onPaneClick={onPaneClick} onNodeContextMenu={onNodeContextMenu} onConnect={onConnect} nodeTypes={nodeTypes} edgeTypes={edgeTypes} selectedNode={selectedNode} />
-                ) : (
-                    <DotLanguageViewer dotScript={dotScript} />
-                )}
+                    <VisualMap nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeClick={onNodeClick} onPaneClick={onPaneClick} onNodeContextMenu={onNodeContextMenu} onConnect={onConnect} nodeTypes={nodeTypes} edgeTypes={edgeTypes} selectedNode={selectedNode} isMaximized={isMaximized} onToggleMaximize={handleToggleMaximize} />
+                ) : ( <DotLanguageViewer dotScript={dotScript} /> )}
                 
-                {contextMenu && (
-                    <NodeContextMenu top={contextMenu.top} left={contextMenu.left} onFilterParents={handleFilterParents} onFilterChildren={handleFilterChildren} onResetFilter={handleResetFilter}/>
-                )}
+                {contextMenu && ( <NodeContextMenu top={contextMenu.top} left={contextMenu.left} onFilterParents={handleFilterParents} onFilterChildren={handleFilterChildren} onResetFilter={handleResetFilter}/> )}
             </div>
-
             <ConfirmationModal isOpen={isConfirmModalOpen} onClose={() => setIsConfirmModalOpen(false)} onConfirm={handleConfirmEdgeDelete} title="Confirmar Exclusão de Relação" message="Você tem certeza que deseja excluir esta relação de dependência?" />
         </div>
     );
