@@ -100,14 +100,33 @@ Siga os passos abaixo para configurar e executar a aplicação no seu ambiente l
     -   Navegue até a pasta `backend/`.
     -   Renomeie ou copie o ficheiro `.env.example` para `.env`.
 
-3.  **Edite o ficheiro `.env`**:
-    -   `SECRET_KEY`: **Obrigatório.** Substitua o valor por uma string longa e aleatória para a segurança dos tokens JWT.
-    -   `ROOT_USER_PASSWORD`: **Obrigatório.** Defina a senha para o utilizador `root` inicial. **Não coloque a senha em texto plano aqui.** Gere um hash **bcrypt** e cole o hash no ficheiro.
-        -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
-            ```bash
-            python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('sua_senha_segura_aqui'))"
-            ```
-        -   Copie o resultado (algo como `$2b$12$...`) e cole-o no ficheiro `.env`.
+3.  **Edite o ficheiro `.env` com todas as variáveis necessárias**:
+
+    ```env
+    # Detalhes de Conexão com o MongoDB
+    # IMPORTANTE: Use 'mongo' como host, que é o nome do serviço no docker-compose.yml.
+    MONGO_DETAILS=mongodb://mongo:27017
+    
+    # Nome do Banco de Dados
+    DATABASE_NAME=service_catalog
+    
+    # Configurações de Segurança para Tokens JWT
+    # Use uma chave longa e aleatória para produção.
+    SECRET_KEY=sua_chave_secreta_super_segura_aqui
+    ALGORITHM=HS256
+    ACCESS_TOKEN_EXPIRE_MINUTES=30
+    
+    # Senha do Utilizador 'root'
+    # IMPORTANTE: Gere um hash bcrypt para a sua senha e cole o hash aqui.
+    # Exemplo de hash: $2b$12$EixZa4X4O2E2wMkxDqYyLOlF1yHw7i2pGkRkG.DqD7RzJ.E2h3i3S
+    ROOT_USER_PASSWORD=seu_hash_bcrypt_aqui
+    ```
+
+    -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
+        ```bash
+        python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('sua_senha_segura_aqui'))"
+        ```
+        -   Copie o resultado e cole-o no ficheiro `.env`.
 
 ### Iniciando a Aplicação
 
@@ -184,7 +203,7 @@ A documentação completa e interativa da API está disponível em `http://local
 | `POST` | `/api/resources/{id}/clone`       | Clona um recurso existente.                                |
 | `GET`  | `/api/resources/{id}/timeline`    | Obtém a timeline de eventos de um recurso.                 |
 | `POST` | `/api/resources/{id}/events`      | Adiciona um novo evento a um recurso pelo seu ID.          |
-| `POST` | `/api/resources/by-name/{name}/events`| **(NOVO)** Adiciona um evento a um recurso pelo seu nome.  |
+| `POST` | `/api/resources/by-name/{name}/events`| Adiciona um evento a um recurso pelo seu nome.  |
 | `GET`  | `/api/resources/map`              | Obtém os dados formatados para o mapa de serviços.         |
 | `GET`  | `/api/meta/config`                | Obtém dados de configuração para o frontend.               |
 
