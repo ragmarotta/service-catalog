@@ -23,6 +23,18 @@ def get_user_collection():
     """Retorna a coleção 'users' do MongoDB."""
     return get_database().get_collection("users")
 
+def _normalize_tags(tags: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """
+    Função auxiliar que recebe uma lista de tags e a retorna com chaves e valores em maiúsculas.
+    """
+    if not tags:
+        return []
+    return [
+        {"key": tag.get("key", "").upper(), "value": tag.get("value", "").upper()}
+        for tag in tags
+    ]
+
+
 async def get_resource_by_name(name: str) -> Optional[ResourceInDB]:
     """
     Busca um único recurso pelo seu nome (case-insensitive).
@@ -37,10 +49,13 @@ async def get_resource_by_name(name: str) -> Optional[ResourceInDB]:
 # --- CRUD para Recursos ---
 async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
     """
-    Cria um novo documento de recurso no banco de dados.
-    Converte os IDs de string para ObjectId antes de inserir.
+    Cria um novo documento de recurso no banco de dados, garantindo que as tags sejam salvas em maiúsculas.
     """
     resource_dict = resource.model_dump()
+    # Utiliza a função auxiliar para normalizar as tags.
+    if "tags" in resource_dict:
+        resource_dict["tags"] = _normalize_tags(resource_dict.get("tags", []))
+    
     resource_dict["events"] = []
     if "related_resources" in resource_dict:
         resource_dict["related_resources"] = [ObjectId(rid) for rid in resource.related_resources if ObjectId.is_valid(rid)]
@@ -141,28 +156,22 @@ async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = No
     return resources
 
 async def update_resource(resource_id: str, resource_data: schemas.ResourceUpdate) -> Optional[ResourceInDB]:
-    """Atualiza um documento de recurso existente no banco de dados."""
+    """
+    Atualiza um documento de recurso, garantindo que as tags sejam salvas em maiúsculas.
+    """
     if not ObjectId.is_valid(resource_id):
         return None
-    update_data = resource_data.model_dump(exclude_unset=True) # Apenas atualiza campos fornecidos
+    update_data = resource_data.model_dump(exclude_unset=True) 
+    
+    # Utiliza a função auxiliar para normalizar as tags.
+    if "tags" in update_data and update_data["tags"] is not None:
+        update_data["tags"] = _normalize_tags(update_data["tags"])
+
     if "related_resources" in update_data and update_data["related_resources"] is not None:
         update_data["related_resources"] = [ObjectId(rid) for rid in update_data["related_resources"] if ObjectId.is_valid(rid)]
     if len(update_data) >= 1:
         await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$set": update_data})
     return await get_resource(resource_id)
-
-async def clone_resource(resource_id: str) -> Optional[ResourceInDB]:
-    """Clona um recurso, criando uma cópia com um novo nome."""
-    original_resource = await get_resource(resource_id)
-    if not original_resource:
-        return None
-    cloned_data = schemas.ResourceCreate(
-        name=f"{original_resource.name} - Cópia",
-        description=original_resource.description,
-        tags=original_resource.tags,
-        related_resources=original_resource.related_resources,
-    )
-    return await create_resource(cloned_data)
 
 async def delete_resource(resource_id: str) -> bool:
     """Deleta um recurso e remove as suas referências de outros recursos."""
