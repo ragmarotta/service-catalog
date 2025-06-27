@@ -14,6 +14,20 @@ from .models import Event, UserInDB, ResourceInDB
 from .security import get_password_hash
 from datetime import datetime, timezone
 
+# --- Função Auxiliar para Tags ---
+def _normalize_tags(tags: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """
+    Função auxiliar que recebe uma lista de tags e a retorna com chaves e valores em maiúsculas.
+    
+    Args:
+        tags (List[Dict[str, str]]): A lista de dicionários de tags.
+        
+    Returns:
+        List[Dict[str, str]]: A lista de tags com valores normalizados.
+    """
+    if not tags: return []
+    return [{"key": tag.get("key", "").upper(), "value": tag.get("value", "").upper()} for tag in tags]
+
 # --- Funções de conveniência para obter coleções ---
 def get_resource_collection():
     """Retorna a coleção 'resources' do MongoDB."""
@@ -23,21 +37,17 @@ def get_user_collection():
     """Retorna a coleção 'users' do MongoDB."""
     return get_database().get_collection("users")
 
-def _normalize_tags(tags: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    """
-    Função auxiliar que recebe uma lista de tags e a retorna com chaves e valores em maiúsculas.
-    """
-    if not tags:
-        return []
-    return [
-        {"key": tag.get("key", "").upper(), "value": tag.get("value", "").upper()}
-        for tag in tags
-    ]
-
+# --- CRUD para Recursos ---
 
 async def get_resource_by_name(name: str) -> Optional[ResourceInDB]:
     """
     Busca um único recurso pelo seu nome (case-insensitive).
+    
+    Args:
+        name (str): O nome do recurso a ser procurado.
+        
+    Returns:
+        Optional[ResourceInDB]: O objeto do recurso se encontrado, caso contrário None.
     """
     resource_data = await get_resource_collection().find_one({"name": {"$regex": f"^{name}$", "$options": "i"}})
     if resource_data:
@@ -46,16 +56,18 @@ async def get_resource_by_name(name: str) -> Optional[ResourceInDB]:
         return ResourceInDB(**resource_data)
     return None
 
-# --- CRUD para Recursos ---
 async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
     """
-    Cria um novo documento de recurso no banco de dados, garantindo que as tags sejam salvas em maiúsculas.
+    Cria um novo documento de recurso, normalizando as tags e inicializando os eventos.
+    
+    Args:
+        resource (schemas.ResourceCreate): O objeto Pydantic com os dados do recurso a ser criado.
+        
+    Returns:
+        ResourceInDB: O objeto do recurso recém-criado, validado pelo Pydantic.
     """
     resource_dict = resource.model_dump()
-    # Utiliza a função auxiliar para normalizar as tags.
-    if "tags" in resource_dict:
-        resource_dict["tags"] = _normalize_tags(resource_dict.get("tags", []))
-    
+    resource_dict["tags"] = _normalize_tags(resource_dict.get("tags", []))
     resource_dict["events"] = []
     if "related_resources" in resource_dict:
         resource_dict["related_resources"] = [ObjectId(rid) for rid in resource.related_resources if ObjectId.is_valid(rid)]
@@ -65,63 +77,40 @@ async def create_resource(resource: schemas.ResourceCreate) -> ResourceInDB:
         created_resource_data['related_resources'] = [str(res_id) for res_id in created_resource_data['related_resources']]
     return ResourceInDB(**created_resource_data)
 
-async def import_resources(resources_to_import: List[schemas.ResourceImport]) -> Dict[str, Any]:
+async def update_resource(resource_id: str, resource_data: schemas.ResourceUpdate) -> Optional[ResourceInDB]:
     """
-    Importa uma lista de recursos, criando novos ou atualizando existentes.
+    Atualiza um documento de recurso, normalizando as tags.
     
-    A importação é feita em duas passagens para lidar corretamente com as relações:
-    1. Cria ou atualiza os dados básicos de cada recurso (nome, descrição, tags) e
-       constrói um mapa de nomes para os IDs gerados/existentes.
-    2. Itera novamente sobre a lista para definir as relações ('related_resources')
-       usando o mapa de IDs, garantindo que mesmo listas vazias sobrescrevam as existentes.
+    Args:
+        resource_id (str): O ID do recurso a ser atualizado.
+        resource_data (schemas.ResourceUpdate): Os campos a serem atualizados.
+        
+    Returns:
+        Optional[ResourceInDB]: O objeto do recurso atualizado, ou None se não for encontrado.
     """
-    summary = {"created": 0, "updated": 0, "errors": []}
-    name_to_id_map: Dict[str, str] = {}
-    
-    # Passagem 1: Criar/atualizar recursos básicos e construir o mapa nome -> ID
-    for index, res_import in enumerate(resources_to_import):
-        try:
-            # Prepara os dados, mas ignora as relações por enquanto
-            resource_payload = res_import.model_dump(exclude={'related_resources'})
-            
-            existing_resource = await get_resource_by_name(res_import.name)
-            if existing_resource:
-                update_schema = schemas.ResourceUpdate(**resource_payload)
-                updated_resource = await update_resource(str(existing_resource.id), update_schema)
-                name_to_id_map[res_import.name] = str(updated_resource.id)
-                summary["updated"] += 1
-            else:
-                create_schema = schemas.ResourceCreate(**resource_payload)
-                new_resource = await create_resource(create_schema)
-                name_to_id_map[res_import.name] = str(new_resource.id)
-                summary["created"] += 1
-        except Exception as e:
-            summary["errors"].append(f"Item '{res_import.name}': {str(e)}")
-
-    # Passagem 2: Atualizar as relações ('related_resources')
-    for res_import in resources_to_import:
-        res_name = res_import.name
-        res_id = name_to_id_map.get(res_name)
-        if not res_id:
-            continue
-            
-        try:
-            # Converte os nomes dos filhos para os seus respectivos IDs
-            related_ids = [name_to_id_map[name] for name in res_import.related_resources if name in name_to_id_map]
-            
-            # Corrigido: Atualiza sempre as relações, mesmo que a lista de IDs seja vazia,
-            # para garantir que o estado do ficheiro importado seja refletido.
-            await update_resource(res_id, schemas.ResourceUpdate(related_resources=related_ids))
-        except Exception as e:
-            summary["errors"].append(f"Item '{res_name}': Falha ao atualizar relações - {str(e)}")
-
-    return summary
+    if not ObjectId.is_valid(resource_id): return None
+    update_data = resource_data.model_dump(exclude_unset=True) 
+    if "tags" in update_data and update_data["tags"] is not None:
+        update_data["tags"] = _normalize_tags(update_data["tags"])
+    if "related_resources" in update_data and update_data["related_resources"] is not None:
+        update_data["related_resources"] = [ObjectId(rid) for rid in update_data["related_resources"] if ObjectId.is_valid(rid)]
+    if len(update_data) >= 1:
+        await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$set": update_data})
+    return await get_resource(resource_id)
 
 async def clone_resource(resource_id: str) -> Optional[ResourceInDB]:
-    """Clona um recurso, criando uma cópia com um novo nome."""
+    """
+    Clona um recurso, criando uma cópia com um novo nome e sem o histórico de eventos.
+    
+    Args:
+        resource_id (str): O ID do recurso a ser clonado.
+        
+    Returns:
+        Optional[ResourceInDB]: O objeto do recurso clonado, ou None se o original não for encontrado.
+    """
     original_resource = await get_resource(resource_id)
-    if not original_resource:
-        return None
+    if not original_resource: return None
+    
     cloned_data = schemas.ResourceCreate(
         name=f"{original_resource.name} - Cópia",
         description=original_resource.description,
@@ -130,13 +119,66 @@ async def clone_resource(resource_id: str) -> Optional[ResourceInDB]:
     )
     return await create_resource(cloned_data)
 
+async def import_resources(resources_to_import: List[schemas.ResourceImport]) -> Dict[str, Any]:
+    """
+    Importa uma lista de recursos, criando novos ou atualizando existentes.
+    Preserva os eventos dos recursos que são atualizados.
+    
+    Args:
+        resources_to_import (List[schemas.ResourceImport]): Uma lista de objetos de recurso para importar.
+        
+    Returns:
+        Dict[str, Any]: Um sumário da operação, com contagem de criados, atualizados e erros.
+    """
+    summary = {"created": 0, "updated": 0, "errors": []}
+    name_to_id_map: Dict[str, str] = {}
+    
+    # Passagem 1: Criar/atualizar dados básicos e construir o mapa nome -> ID.
+    for res_import in resources_to_import:
+        try:
+            base_payload = {"name": res_import.name, "description": res_import.description, "tags": res_import.tags}
+            
+            existing_resource = await get_resource_by_name(res_import.name)
+            if existing_resource:
+                update_schema = schemas.ResourceUpdate(**base_payload)
+                updated_resource = await update_resource(str(existing_resource.id), update_schema)
+                name_to_id_map[res_import.name] = str(updated_resource.id)
+                summary["updated"] += 1
+            else:
+                create_schema = schemas.ResourceCreate(**base_payload)
+                new_resource = await create_resource(create_schema)
+                name_to_id_map[res_import.name] = str(new_resource.id)
+                summary["created"] += 1
+        except Exception as e:
+            summary["errors"].append(f"Item '{res_import.name}': {str(e)}")
+
+    # Passagem 2: Atualizar apenas as relações ('related_resources').
+    for res_import in resources_to_import:
+        res_name = res_import.name
+        res_id = name_to_id_map.get(res_name)
+        if not res_id: continue
+        try:
+            related_ids = [name_to_id_map[name] for name in res_import.related_resources if name in name_to_id_map]
+            await get_resource_collection().update_one(
+                {"_id": ObjectId(res_id)},
+                {"$set": {"related_resources": [ObjectId(rid) for rid in related_ids]}}
+            )
+        except Exception as e:
+            summary["errors"].append(f"Item '{res_name}': Falha ao atualizar relações - {str(e)}")
+
+    return summary
+
 async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
     """
     Busca um único recurso pelo seu ID.
-    Converte os IDs de recursos relacionados para string antes de retornar.
+    
+    Args:
+        resource_id (str): O ID do recurso a ser procurado.
+        
+    Returns:
+        Optional[ResourceInDB]: O objeto do recurso se encontrado, caso contrário None.
     """
-    if not ObjectId.is_valid(resource_id):
-        return None
+    if not ObjectId.is_valid(resource_id): return None
     resource_data = await get_resource_collection().find_one({"_id": ObjectId(resource_id)})
     if resource_data:
         if 'related_resources' in resource_data:
@@ -147,7 +189,13 @@ async def get_resource(resource_id: str) -> Optional[ResourceInDB]:
 async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = None) -> List[ResourceInDB]:
     """
     Busca todos os recursos, com filtros opcionais por nome e tags.
-    Retorna uma lista de objetos Pydantic `ResourceInDB`.
+    
+    Args:
+        name (Optional[str]): Filtra recursos cujo nome contenha este valor.
+        tags (Optional[str]): Filtra recursos que contenham as tags no formato "chave:valor,chave2:valor2".
+        
+    Returns:
+        List[ResourceInDB]: Uma lista de objetos de recurso.
     """
     query = {}
     if name:
@@ -160,6 +208,7 @@ async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = No
                 tag_list.append({"key": key, "value": {"$regex": value, "$options": "i"}})
         if tag_list:
             query["tags"] = {"$elemMatch": {"$or": tag_list}}
+            
     resources = []
     cursor = get_resource_collection().find(query)
     async for resource_data in cursor:
@@ -168,69 +217,31 @@ async def get_all_resources(name: Optional[str] = None, tags: Optional[str] = No
         resources.append(ResourceInDB(**resource_data))
     return resources
 
-async def update_resource(resource_id: str, resource_data: schemas.ResourceUpdate) -> Optional[ResourceInDB]:
-    """
-    Atualiza um documento de recurso, garantindo que as tags sejam salvas em maiúsculas.
-    """
-    if not ObjectId.is_valid(resource_id):
-        return None
-    update_data = resource_data.model_dump(exclude_unset=True) 
-    
-    # Utiliza a função auxiliar para normalizar as tags.
-    if "tags" in update_data and update_data["tags"] is not None:
-        update_data["tags"] = _normalize_tags(update_data["tags"])
-
-    if "related_resources" in update_data and update_data["related_resources"] is not None:
-        update_data["related_resources"] = [ObjectId(rid) for rid in update_data["related_resources"] if ObjectId.is_valid(rid)]
-    if len(update_data) >= 1:
-        await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$set": update_data})
-    return await get_resource(resource_id)
-
 async def delete_resource(resource_id: str) -> bool:
     """Deleta um recurso e remove as suas referências de outros recursos."""
-    if not ObjectId.is_valid(resource_id):
-        return False
-    # Remove as referências deste recurso em outros documentos.
+    if not ObjectId.is_valid(resource_id): return False
     await get_resource_collection().update_many({"related_resources": ObjectId(resource_id)}, {"$pull": {"related_resources": ObjectId(resource_id)}})
     delete_result = await get_resource_collection().delete_one({"_id": ObjectId(resource_id)})
     return delete_result.deleted_count > 0
 
 async def delete_multiple_resources(resource_ids: List[str]) -> int:
-    """Deleta múltiplos recursos baseados numa lista de seus IDs."""
-    # Converte a lista de strings de ID para uma lista de ObjectIds
+    """Deleta múltiplos recursos e remove as suas referências."""
     object_ids = [ObjectId(rid) for rid in resource_ids if ObjectId.is_valid(rid)]
-
-    if not object_ids:
-        return 0
-
-    # Remove as referências a estes recursos de outros documentos
-    await get_resource_collection().update_many(
-        {"related_resources": {"$in": object_ids}},
-        {"$pull": {"related_resources": {"$in": object_ids}}}
-    )
-
-    # Deleta os documentos que correspondem aos IDs fornecidos
-    delete_result = await get_resource_collection().delete_many({
-        "_id": {"$in": object_ids}
-    })
-    
+    if not object_ids: return 0
+    await get_resource_collection().update_many({"related_resources": {"$in": object_ids}}, {"$pull": {"related_resources": {"$in": object_ids}}})
+    delete_result = await get_resource_collection().delete_many({"_id": {"$in": object_ids}})
     return delete_result.deleted_count
 
-# --- CRUD para Eventos ---
 async def add_event_to_resource(resource_id: str, event: schemas.EventCreate) -> Optional[ResourceInDB]:
     """Adiciona um evento ao array 'events' de um documento de recurso."""
-    if not ObjectId.is_valid(resource_id):
-        return None
+    if not ObjectId.is_valid(resource_id): return None
     event_dict = event.model_dump()
-    # Usa um timestamp ciente do fuso horário UTC para consistência.
     event_dict['timestamp'] = datetime.now(timezone.utc)
-    await get_resource_collection().update_one(
-        {"_id": ObjectId(resource_id)},
-        {"$push": {"events": event_dict}}
-    )
+    await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$push": {"events": event_dict}})
     return await get_resource(resource_id)
 
 # --- CRUD para Utilizadores ---
+
 async def get_user_by_username(username: str) -> Optional[UserInDB]:
     """Busca um único utilizador pelo seu nome de utilizador."""
     user_data = await get_user_collection().find_one({"username": username})
@@ -258,8 +269,7 @@ async def get_all_users() -> List[UserInDB]:
 
 async def get_user(user_id: str) -> Optional[UserInDB]:
     """Busca um único utilizador pelo seu ID."""
-    if not ObjectId.is_valid(user_id):
-        return None
+    if not ObjectId.is_valid(user_id): return None
     user_data = await get_user_collection().find_one({"_id": ObjectId(user_id)})
     if user_data:
         return UserInDB(**user_data)
@@ -267,8 +277,7 @@ async def get_user(user_id: str) -> Optional[UserInDB]:
 
 async def update_user(user_id: str, user_data: schemas.UserUpdate) -> Optional[UserInDB]:
     """Atualiza um utilizador. Se uma nova senha for fornecida, ela é hasheada."""
-    if not ObjectId.is_valid(user_id):
-        return None
+    if not ObjectId.is_valid(user_id): return None
     update_data = user_data.model_dump(exclude_unset=True)
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = get_password_hash(update_data["password"])
@@ -280,9 +289,7 @@ async def update_user(user_id: str, user_data: schemas.UserUpdate) -> Optional[U
 async def delete_user(user_id: str) -> bool:
     """Deleta um utilizador, impedindo a exclusão do utilizador 'root'."""
     user_to_delete = await get_user(user_id)
-    if not user_to_delete:
-        return False
-    if user_to_delete.username == "root":
-        return False
+    if not user_to_delete: return False
+    if user_to_delete.username == "root": return False
     delete_result = await get_user_collection().delete_one({"_id": ObjectId(user_to_delete.id)})
     return delete_result.deleted_count > 0
