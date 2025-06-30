@@ -58,6 +58,8 @@ services:
       - backend
     networks:
       - app-network
+    environment:
+      REACT_APP_API_URL: http://backend:8000
 
   #Serviço para executar os testes do frontend
   frontend-tests:

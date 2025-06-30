@@ -6,6 +6,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-24-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4.4-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
+[![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?style=for-the-badge&logo=redis)](https://redis.io/)
 [![Nginx](https://img.shields.io/badge/Nginx-1.29-269539?style=for-the-badge&logo=nginx)](https://www.nginx.com/)
 
 Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas dependências, exibindo todo o ciclo de vida através de um mapa de relacionamentos interativo e uma timeline de eventos.
@@ -15,6 +16,7 @@ Um sistema completo para catalogar, gerenciar e visualizar serviços e as suas d
 - [Visão Geral](#visão-geral)
 - [Funcionalidades Principais](#funcionalidades-principais)
 - [Arquitetura e Tecnologias](#arquitetura-e-tecnologias)
+- [Segurança](#segurança)
 - [Como Executar o Projeto](#como-executar-o-projeto)
   - [Pré-requisitos](#pré-requisitos)
   - [Configuração do Ambiente](#configuração-do-ambiente)
@@ -73,11 +75,23 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 |                 | **FastAPI** | Framework web moderno e de alta performance para a construção da API RESTful.                      |
 |                 | **Pydantic** | Utilizado para validação de dados, serialização e geração automática da documentação da API.       |
 |                 | **Uvicorn** | Servidor ASGI (Asynchronous Server Gateway Interface) que executa a aplicação FastAPI.             |
+|                 | **Redis** | Utilizado para cache e rate limiting no backend.                                                   |
 | **Base de Dados**| **MongoDB** | Banco de dados NoSQL, ideal para a estrutura flexível e hierárquica dos recursos.                  |
 |                 | **Motor** | Driver assíncrono oficial para interagir com o MongoDB a partir do FastAPI.                        |
 | **Containerização** | **Docker & Docker Compose** | A aplicação inteira (frontend, backend, base de dados) é executada em contêineres isolados. |
 | **Ambiente de Build** | **Node.js 24** | Utilizado para construir a aplicação React para produção. |
 | **Testes** | **Pytest**, **Jest** | Frameworks para execução de testes unitários do backend e frontend, respetivamente. |
+
+## Segurança
+
+Este projeto incorpora diversas medidas de segurança para proteger a aplicação e os dados.
+
+-   **Rate Limiting (Backend)**: Implementado no endpoint de autenticação (`/api/token`) para mitigar ataques de força bruta.
+-   **CORS Policy Refinada (Backend)**: As políticas de Cross-Origin Resource Sharing (CORS) foram ajustadas para permitir apenas métodos e cabeçalhos necessários, reduzindo a superfície de ataque.
+-   **Security Headers (Backend)**: O backend envia cabeçalhos de segurança HTTP (e.g., `X-Content-Type-Options`, `X-Frame-Options`, `Strict-Transport-Security`) para proteger contra ataques comuns como XSS e clickjacking.
+-   **Content Security Policy (Frontend)**: Uma CSP foi adicionada ao frontend para mitigar ataques de Cross-Site Scripting (XSS) e controlar os recursos que o navegador pode carregar.
+-   **Hardening de Dockerfiles**: Os Dockerfiles do backend e frontend foram configurados para rodar os processos como utilizadores não-root, minimizando o impacto de potenciais vulnerabilidades.
+-   **Logging de Segurança**: Tentativas de login falhas são registadas para monitorização e auditoria.
 
 ## Como Executar o Projeto
 
@@ -120,6 +134,10 @@ Siga os passos abaixo para configurar e executar a aplicação no seu ambiente l
     # IMPORTANTE: Gere um hash bcrypt para a sua senha e cole o hash aqui.
     # Exemplo de hash: $2b$12$EixZa4X4O2E2wMkxDqYyLOlF1yHw7i2pGkRkG.DqD7RzJ.E2h3i3S
     ROOT_USER_PASSWORD=seu_hash_bcrypt_aqui
+
+    # URL de Conexão com o Redis (para Rate Limiting)
+    # IMPORTANTE: Use 'redis' como host, que é o nome do serviço no docker-compose.yml.
+    REDIS_URL=redis://redis:6379
     ```
 
     -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
@@ -137,7 +155,7 @@ docker-compose up --build
 ```
 
 -   O comando `--build` força a reconstrução das imagens Docker na primeira execução ou após alterações nos `Dockerfiles` ou `requirements.txt`.
--   Aguarde até que todos os serviços (`mongo`, `backend`, `frontend`) estejam de pé.
+-   Aguarde até que todos os serviços (`mongo`, `redis`, `backend`, `frontend`) estejam de pé.
 
 **Acessos:**
 

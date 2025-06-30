@@ -4,7 +4,7 @@ import axios from 'axios';
 const apiClient = axios.create({
   // A URL base da API é configurada pelo proxy do Nginx no ambiente de produção.
   // Em desenvolvimento, o proxy do Webpack dev server fará o trabalho.
-  baseURL: '/api', 
+  baseURL: process.env.REACT_APP_API_URL || '/api', 
   headers: {
     'Content-Type': 'application/json',
   },
