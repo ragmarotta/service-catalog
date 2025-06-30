@@ -141,7 +141,7 @@ const EventTimelinePage = () => {
         } finally {
             setLoading(false);
         }
-    }, [selectedResource, startDate, endDate]);
+    }, [selectedResource, startDate, endDate, COLOR_PALETTE]);
 
     useEffect(() => {
         fetchTimeline();

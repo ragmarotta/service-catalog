@@ -37,12 +37,21 @@ RUN rm /etc/nginx/conf.d/default.conf
 # Copia o nosso arquivo de configuração personalizado (nginx.conf) para a pasta de configuração do Nginx no contêiner.
 COPY nginx.conf /etc/nginx/conf.d
 
+# Copia o arquivo de configuração principal do Nginx
+COPY nginx-main.conf /etc/nginx/nginx.conf
+
 # Copia a pasta 'build' (que contém os arquivos estáticos otimizados do React) do estágio 'build' anterior
 # para a pasta raiz do Nginx, de onde os arquivos serão servidos.
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Change ownership of Nginx cache directory to nginx user
+RUN chown -R nginx:nginx /var/cache/nginx
+
 # Informa ao Docker que o contêiner irá escutar na porta 80.
 EXPOSE 80
+
+# Run Nginx as a non-root user
+USER nginx
 
 # Comando final para iniciar o servidor Nginx em "primeiro plano" (foreground).
 # O Docker precisa que o processo principal não termine, e 'daemon off;' garante isso.

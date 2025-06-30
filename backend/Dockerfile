@@ -2,6 +2,9 @@
 #    na variante 'slim', que é uma versão leve e otimizada.
 FROM python:3.13-slim
 
+# Create a non-root user and group
+RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
+
 # 2. Diretório de Trabalho: Define o diretório padrão dentro do contêiner como /app.
 #    Todos os comandos subsequentes (COPY, RUN, CMD) serão executados a partir deste diretório.
 WORKDIR /app
@@ -21,11 +24,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copiar Código da Aplicação: Copia a subpasta 'app' (que contém o código Python)
 #    da sua máquina local para a subpasta 'app' dentro do contêiner (/app/app).
-COPY ./app /app/app
+COPY --chown=appuser:appgroup ./app /app/app
 
 # 6. Expor a Porta: Informa ao Docker que o contêiner irá escutar na porta 8000.
 #    Isso não publica a porta, apenas a documenta. O mapeamento real é feito no docker-compose.yml.
 EXPOSE 8000
+
+# Switch to the non-root user
+USER appuser
 
 # O comando para iniciar a aplicação (CMD) não é necessário aqui,
 # pois ele é fornecido dinamicamente pelo docker-compose.yml, o que oferece mais flexibilidade.

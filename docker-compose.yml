@@ -23,9 +23,12 @@ services:
     # Garante que o serviço do MongoDB inicie antes do backend.
     depends_on:
       - mongo
+      - redis
     # Conecta este serviço à rede 'app-network', permitindo a comunicação com os outros serviços.
     networks:
       - app-network
+    environment:
+      REDIS_URL: redis://redis:6379
 
   #Serviço para executar os testes do backend
   backend-tests:
@@ -77,6 +80,14 @@ services:
     # O volume 'mongo-data' é definido na seção 'volumes' abaixo.
     volumes:
       - mongo-data:/data/db
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: service_catalog_redis
+    ports:
+      - "6379:6379"
     networks:
       - app-network
 

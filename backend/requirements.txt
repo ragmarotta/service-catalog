@@ -8,6 +8,7 @@ python-dotenv
 motor
 email-validator
 python-multipart
+fastapi-limiter
 
 # Dependências de Teste
 pytest

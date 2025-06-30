@@ -5,13 +5,17 @@ Define os endpoints da API relacionados à autenticação.
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
+from fastapi_limiter.depends import RateLimiter
+import logging
 
 from .. import schemas, security
 from ..models import Token, UserInDB
 
 router = APIRouter()
 
-@router.post("/token", response_model=Token)
+logger = logging.getLogger(__name__)
+
+@router.post("/token", response_model=Token, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Endpoint de login.
@@ -22,6 +26,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     """
     user = await security.authenticate_user(form_data.username, form_data.password)
     if not user:
+        logger.warning(f"Failed login attempt for user: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
