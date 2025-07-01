@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .database import connect_to_mongo, close_mongo_connection, setup_root_user
-from .routers import auth, users, resources
+from .routers import auth, users, resources, config
 from fastapi_limiter import FastAPILimiter
 import redis.asyncio as redis
 import os
@@ -76,6 +76,7 @@ async def add_security_headers(request: Request, call_next):
 app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(resources.router, prefix="/api", tags=["Resources"])
+app.include_router(config.router, prefix="/api", tags=["Configuration"])
 
 
 @app.get("/")

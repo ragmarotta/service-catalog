@@ -60,6 +60,10 @@ A aplicação é totalmente conteinerizada com Docker, garantindo um setup de de
     -   **Administrador**: Controlo total sobre a aplicação, incluindo gestão de utilizadores.
     -   **Utilizador**: Pode criar, editar e gerir recursos.
     -   **Visualizador**: Acesso apenas para leitura das informações.
+-   **Menu de Configurações Avançadas**:
+    -   Permite a configuração de parâmetros globais da aplicação, como a URL do ícone.
+    -   Integração com provedores OAuth2 para autenticação externa, incluindo URL do provedor, Client ID, Client Secret, escopos e mapeamento de atributos de utilizador.
+    -   Personalização do texto do botão de login para OAuth2.
 
 ## Arquitetura e Tecnologias
 
@@ -224,6 +228,7 @@ A documentação completa e interativa da API está disponível em `http://local
 | `POST` | `/api/resources/by-name/{name}/events`| Adiciona um evento a um recurso pelo seu nome.  |
 | `GET`  | `/api/resources/map`              | Obtém os dados formatados para o mapa de serviços.         |
 | `GET`  | `/api/meta/config`                | Obtém dados de configuração para o frontend.               |
+| `PUT`  | `/api/meta/config`                | Atualiza a configuração da aplicação (requer admin).       |
 
 
 ### Utilizadores (Users)

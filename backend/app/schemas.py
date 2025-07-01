@@ -15,7 +15,7 @@ from datetime import datetime
 from bson import ObjectId
 
 # Importa modelos internos que podem ser reutilizados nos schemas.
-from .models import Tag, Event, EmailStr
+from .models import Tag, Event, EmailStr, AppConfig
 
 # --- Helper Function e Tipos Anotados ---
 
@@ -124,5 +124,3 @@ class ResourceImport(BaseModel):
     # 'related_resources' aqui são os NOMES dos recursos filhos.
     related_resources: List[str] = []
 
-class BulkDeleteRequest(BaseModel):
-    ids: List[str]

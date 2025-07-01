@@ -6,7 +6,7 @@
 }
 
 .custom-node-handle-top {
-  @apply w-16 !bg-teal-500;
+  @apply w-2 !bg-teal-500;
 }
 
 .custom-node-label {
@@ -14,5 +14,5 @@
 }
 
 .custom-node-handle-bottom {
-  @apply w-16 !bg-orange-500;
+  @apply w-2 !bg-orange-500;
 }

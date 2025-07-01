@@ -75,6 +75,15 @@ async def get_current_active_user(current_user: UserInDB = Depends(get_current_u
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+async def get_current_active_admin_user(current_user: UserInDB = Depends(get_current_active_user)) -> UserInDB:
+    """Dependência que verifica se o utilizador autenticado é um administrador ativo."""
+    if current_user.role != "administrador":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
+        )
+    return current_user
+
 async def authenticate_user(username: str, password: str) -> Optional[UserInDB]:
     """Autentica um utilizador."""
     # A importação também é feita aqui para garantir o acesso ao crud.

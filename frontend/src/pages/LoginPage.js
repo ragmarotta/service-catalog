@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LockClosedIcon, UserIcon } from '@heroicons/react/24/solid';
+import apiClient from '../services/api';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -9,11 +10,24 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [oauthConfig, setOauthConfig] = useState(null);
     const auth = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || "/";
+
+    useEffect(() => {
+        const fetchOauthConfig = async () => {
+            try {
+                const response = await apiClient.get('/config');
+                setOauthConfig(response.data);
+            } catch (err) {
+                console.error("Error fetching OAuth config:", err);
+            }
+        };
+        fetchOauthConfig();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,6 +39,19 @@ const LoginPage = () => {
             navigate(from, { replace: true });
         } else {
             setError('Falha no login. Verifique seu usuário e senha.');
+        }
+    };
+
+    const handleOAuthLogin = () => {
+        if (oauthConfig && oauthConfig.oauth2_enabled && oauthConfig.oauth2_provider_url) {
+            const params = new URLSearchParams({
+                response_type: 'code',
+                client_id: oauthConfig.oauth2_client_id,
+                redirect_uri: oauthConfig.oauth2_redirect_uri,
+                scope: oauthConfig.oauth2_scope,
+                state: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15), // Simple state for now
+            });
+            window.location.href = `${oauthConfig.oauth2_provider_url}/authorize?${params.toString()}`;
         }
     };
 
@@ -79,6 +106,17 @@ const LoginPage = () => {
                         </button>
                     </div>
                 </form>
+                {oauthConfig?.oauth2_enabled && (
+                    <div className="mt-4">
+                        <button
+                            type="button"
+                            onClick={handleOAuthLogin}
+                            className="login-submit-button bg-blue-600 hover:bg-blue-700"
+                        >
+                            {oauthConfig.oauth2_login_button_text}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -10,7 +10,7 @@ from bson import ObjectId
 from typing import List, Optional, Dict, Any
 from .database import get_database
 from . import schemas
-from .models import Event, UserInDB, ResourceInDB
+from .models import Event, UserInDB, ResourceInDB, AppConfig
 from .security import get_password_hash
 from datetime import datetime, timezone
 
@@ -239,6 +239,36 @@ async def add_event_to_resource(resource_id: str, event: schemas.EventCreate) ->
     event_dict['timestamp'] = datetime.now(timezone.utc)
     await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$push": {"events": event_dict}})
     return await get_resource(resource_id)
+
+# --- CRUD para Configuração da Aplicação ---
+
+def get_app_config_collection():
+    """Retorna a coleção 'app_config' do MongoDB."""
+    return get_database().get_collection("app_config")
+
+async def get_app_config() -> AppConfig:
+    """
+    Busca a configuração da aplicação no banco de dados.
+    Se não houver configuração, retorna uma configuração padrão.
+    """
+    config_data = await get_app_config_collection().find_one({})
+    if config_data:
+        return AppConfig(**config_data)
+    return AppConfig() # Retorna uma configuração padrão se não houver nenhuma no DB
+
+async def update_app_config(config: AppConfig) -> AppConfig:
+    """
+    Atualiza a configuração da aplicação no banco de dados.
+    Se não houver configuração, insere uma nova.
+    """
+    config_dict = config.model_dump(exclude_unset=True)
+    # Usa upsert=True para inserir se não existir, ou atualizar se existir
+    await get_app_config_collection().update_one(
+        {},
+        {"$set": config_dict},
+        upsert=True
+    )
+    return await get_app_config()
 
 # --- CRUD para Utilizadores ---
 

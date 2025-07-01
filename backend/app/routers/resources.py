@@ -3,14 +3,15 @@
 Define todos os endpoints (rotas) da API relacionados ao gerenciamento de Recursos.
 Inclui rotas para criar, listar, atualizar, deletar, clonar, e obter metadados de recursos.
 """
-from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
-import json
+from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List, Optional
 from datetime import datetime
 
 from .. import crud, schemas, security
 from ..crud import get_resource_collection 
 from ..models import UserInDB
+from ..models import BulkDeleteRequest
+
 
 router = APIRouter()
 
@@ -143,7 +144,7 @@ async def clone_existing_resource(resource_id: str):
     return schemas.ResourceOut.model_validate(cloned_resource, from_attributes=True)
 
 @router.delete("/resources", status_code=status.HTTP_200_OK, dependencies=[Depends(require_role(["administrador"]))])
-async def delete_multiple_resources(payload: schemas.BulkDeleteRequest):
+async def delete_multiple_resources(payload: BulkDeleteRequest):
     """Deleta múltiplos recursos de uma vez. Apenas para administradores."""
     deleted_count = await crud.delete_multiple_resources(payload.ids)
     if deleted_count == 0:

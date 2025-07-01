@@ -9,7 +9,8 @@ import {
   ArrowLeftOnRectangleIcon,
   ChevronDoubleLeftIcon,
   ComputerDesktopIcon,
-  RectangleStackIcon // Ícone para a lista de recursos
+  RectangleStackIcon, // Ícone para a lista de recursos
+  Cog6ToothIcon // Novo ícone para configurações
 } from '@heroicons/react/24/outline';
 import './Sidebar.css';
 
@@ -74,6 +75,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           >
             <UsersIcon className="sidebar-nav-icon" />
             <span className={`sidebar-nav-text ${!sidebarOpen && 'hidden'}`}>Gerenciar Usuários</span>
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => `sidebar-nav-link ${isActive ? 'sidebar-nav-link-active' : ''}`}
+          >
+            <Cog6ToothIcon className="sidebar-nav-icon" />
+            <span className={`sidebar-nav-text ${!sidebarOpen && 'hidden'}`}>Configurações</span>
           </NavLink>
         )}
       </nav>

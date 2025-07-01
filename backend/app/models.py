@@ -102,4 +102,20 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Modelo para os dados contidos dentro de um token JWT, usado para validação."""
-    username: Optional[str] = None
+    username: Optional[str]
+
+class AppConfig(BaseModel):
+    icon_url: Optional[str] = None
+    oauth2_enabled: bool = False
+    oauth2_provider_url: Optional[str] = None
+    oauth2_client_id: Optional[str] = None
+    oauth2_client_secret: Optional[str] = None
+    oauth2_scope: Optional[str] = "openid email profile"
+    oauth2_redirect_uri: Optional[str] = None
+    oauth2_userinfo_url: Optional[str] = None
+    oauth2_username_attribute: Optional[str] = "preferred_username"
+    oauth2_email_attribute: Optional[str] = "email"
+    oauth2_login_button_text: Optional[str] = "Login with OAuth2"
+
+class BulkDeleteRequest(BaseModel):
+    ids: List[str]

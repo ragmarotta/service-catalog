@@ -9,6 +9,7 @@ import ResourcePage from './pages/ResourcePage';
 import UserManagementPage from './pages/UserManagementPage';
 import EventTimelinePage from './pages/EventTimelinePage';
 import NotFoundPage from './pages/NotFoundPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Componente para proteger rotas que exigem autenticação
 function PrivateRoute({ children }) {
@@ -54,6 +55,14 @@ function App() {
               element={
                 <AdminRoute>
                   <UserManagementPage />
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="settings" 
+              element={
+                <AdminRoute>
+                  <SettingsPage />
                 </AdminRoute>
               } 
             />
