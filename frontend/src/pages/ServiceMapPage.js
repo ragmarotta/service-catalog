@@ -78,7 +78,7 @@ const ServiceMapPage = () => {
         let script = 'digraph Services {\n';
         script += '  rankdir="TB";\n  node [shape=box, style=rounded, fontname="Inter"];\n  edge [fontname="Inter"];\n\n';
         nodesToConvert.forEach(node => {
-            const label = node.data.label.replace(/"/g, '\\"');
+            const label = node.data.label.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
             script += `  "${node.id}" [label="${label}"];\n`;
         });
         script += '\n';
