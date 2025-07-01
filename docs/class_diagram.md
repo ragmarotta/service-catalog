@@ -6,194 +6,194 @@ classDiagram
     }
 
     class Tag {
-        +str key
-        +str value
+        +str chave
+        +str valor
     }
 
-    class Event {
-        +str event_type
+    class Evento {
+        +str tipo_evento
         +datetime timestamp
-        +Optional~str~ message
+        +Optional~str~ mensagem
     }
 
-    class ResourceBase {
-        +str name
-        +Optional~str~ description
+    class RecursoBase {
+        +str nome
+        +Optional~str~ descricao
         +List~Tag~ tags
-        +List~str~ related_resources
+        +List~str~ recursos_relacionados
     }
 
-    class ResourceInDB {
+    class RecursoNoBD {
         +PyObjectId id
-        +List~Event~ events
+        +List~Evento~ eventos
     }
 
-    class UserBase {
-        +str username
+    class UsuarioBase {
+        +str nome_usuario
         +EmailStr email
-        +Optional~str~ full_name
-        +str role
+        +Optional~str~ nome_completo
+        +str papel
     }
 
-    class UserCreate {
-        +str password
+    class UsuarioCriar {
+        +str senha
     }
 
-    class UserInDB {
+    class UsuarioNoBD {
         +PyObjectId id
-        +str hashed_password
-        +bool disabled
+        +str senha_hash
+        +bool desabilitado
     }
 
     class Token {
-        +str access_token
-        +str token_type
+        +str token_acesso
+        +str tipo_token
     }
 
-    class TokenData {
-        +Optional~str~ username
+    class DadosToken {
+        +Optional~str~ nome_usuario
     }
 
-    class AppConfig {
-        +Optional~str~ icon_url
-        +bool oauth2_enabled
-        +Optional~str~ oauth2_provider_url
-        +Optional~str~ oauth2_client_id
-        +Optional~str~ oauth2_client_secret
-        +Optional~str~ oauth2_scope
-        +Optional~str~ oauth2_redirect_uri
-        +Optional~str~ oauth2_userinfo_url
-        +Optional~str~ oauth2_username_attribute
-        +Optional~str~ oauth2_email_attribute
-        +Optional~str~ oauth2_login_button_text
+    class ConfiguracaoApp {
+        +Optional~str~ url_icone
+        +bool oauth2_habilitado
+        +Optional~str~ url_provedor_oauth2
+        +Optional~str~ id_cliente_oauth2
+        +Optional~str~ segredo_cliente_oauth2
+        +Optional~str~ escopo_oauth2
+        +Optional~str~ url_redirecionamento_oauth2
+        +Optional~str~ url_info_usuario_oauth2
+        +Optional~str~ atributo_nome_usuario_oauth2
+        +Optional~str~ atributo_email_oauth2
+        +Optional~str~ texto_botao_login_oauth2
     }
 
-    class BulkDeleteRequest {
+    class RequisicaoExclusaoEmMassa {
         +List~str~ ids
     }
 
-    class ResourceOut {
+    class RecursoSaida {
         +ObjectIdStr id
-        +str name
-        +Optional~str~ description
+        +str nome
+        +Optional~str~ descricao
         +List~Tag~ tags
-        +List~str~ related_resources
-        +List~Event~ events
+        +List~str~ recursos_relacionados
+        +List~Evento~ eventos
     }
 
-    class ResourceWithRelationsOut {
-        +List~str~ parents
-        +List~str~ children
+    class RecursoComRelacoesSaida {
+        +List~str~ pais
+        +List~str~ filhos
     }
 
-    class ResourceCreate {
-        +str name
-        +Optional~str~ description
+    class RecursoCriar {
+        +str nome
+        +Optional~str~ descricao
         +List~Tag~ tags
-        +List~str~ related_resources
+        +List~str~ recursos_relacionados
     }
 
-    class ResourceUpdate {
-        +Optional~str~ name
-        +Optional~str~ description
+    class RecursoAtualizar {
+        +Optional~str~ nome
+        +Optional~str~ descricao
         +Optional~List~Tag~~ tags
-        +Optional~List~str~~ related_resources
+        +Optional~List~str~~ recursos_relacionados
     }
 
-    class EventCreate {
-        +str event_type
-        +Optional~str~ message
+    class EventoCriar {
+        +str tipo_evento
+        +Optional~str~ mensagem
     }
 
-    class Node {
+    class No {
         +str id
-        +str type
-        +dict data
-        +dict position
+        +str tipo
+        +dict dados
+        +dict posicao
     }
 
-    class Edge {
+    class Aresta {
         +str id
-        +str source
-        +str target
-        +bool animated
-        +dict style
+        +str origem
+        +str destino
+        +bool animado
+        +dict estilo
     }
 
-    class ServiceMap {
-        +List~Node~ nodes
-        +List~Edge~ edges
+    class MapaServico {
+        +List~No~ nos
+        +List~Aresta~ arestas
     }
 
-    class UserOut {
+    class UsuarioSaida {
         +ObjectIdStr id
-        +str username
+        +str nome_usuario
         +EmailStr email
-        +Optional~str~ full_name
-        +str role
-        +bool disabled
+        +Optional~str~ nome_completo
+        +str papel
+        +bool desabilitado
     }
 
-    class UserUpdate {
+    class UsuarioAtualizar {
         +Optional~EmailStr~ email
-        +Optional~str~ full_name
-        +Optional~str~ role
-        +Optional~bool~ disabled
-        +Optional~str~ password
+        +Optional~str~ nome_completo
+        +Optional~str~ papel
+        +Optional~bool~ desabilitado
+        +Optional~str~ senha
     }
 
-    class ResourceImport {
-        +str name
-        +Optional~str~ description
+    class RecursoImportar {
+        +str nome
+        +Optional~str~ descricao
         +List~Tag~ tags
-        +List~str~ related_resources
+        +List~str~ recursos_relacionados
     }
 
-    class AppConfigOut {
+    class ConfiguracaoAppSaida {
     }
 
-    ResourceBase <|-- ResourceInDB
-    ResourceBase <|-- ResourceCreate
-    ResourceBase <|-- ResourceUpdate
-    ResourceBase <|-- ResourceImport
+    RecursoBase <|-- RecursoNoBD
+    RecursoBase <|-- RecursoCriar
+    RecursoBase <|-- RecursoAtualizar
+    RecursoBase <|-- RecursoImportar
 
-    ResourceOut <|-- ResourceWithRelationsOut
+    RecursoSaida <|-- RecursoComRelacoesSaida
 
-    UserBase <|-- UserCreate
-    UserBase <|-- UserInDB
-    UserBase <|-- UserOut
-    UserBase <|-- UserUpdate
+    UsuarioBase <|-- UsuarioCriar
+    UsuarioBase <|-- UsuarioNoBD
+    UsuarioBase <|-- UsuarioSaida
+    UsuarioBase <|-- UsuarioAtualizar
 
-    AppConfig <|-- AppConfigOut
+    ConfiguracaoApp <|-- ConfiguracaoAppSaida
 
-    ServiceMap o-- Node
-    ServiceMap o-- Edge
+    MapaServico o-- No
+    MapaServico o-- Aresta
 
-    ResourceInDB o-- Event
-    ResourceInDB o-- Tag
+    RecursoNoBD o-- Evento
+    RecursoNoBD o-- Tag
 
-    ResourceOut o-- Event
-    ResourceOut o-- Tag
+    RecursoSaida o-- Evento
+    RecursoSaida o-- Tag
 
-    ResourceCreate o-- Tag
-    ResourceUpdate o-- Tag
-    ResourceImport o-- Tag
+    RecursoCriar o-- Tag
+    RecursoAtualizar o-- Tag
+    RecursoImportar o-- Tag
 
-    UserInDB o-- Token
-    UserInDB o-- TokenData
+    UsuarioNoBD o-- Token
+    UsuarioNoBD o-- DadosToken
 
-    TokenData o-- Token
+    DadosToken o-- Token
 
-    Node o-- Tag
+    No o-- Tag
 
 ```
 
-### Explanation of the Diagram:
+### Explicação do Diagrama:
 
-This class diagram illustrates the relationships between the main data models and schemas used in the application, primarily defined using Pydantic. It highlights:
+Este diagrama de classes ilustra as relações entre os principais modelos de dados e schemas utilizados na aplicação, definidos principalmente usando Pydantic. Ele destaca:
 
-*   **Inheritance:** Indicated by `ClassA <|-- ClassB`, meaning ClassB inherits from ClassA. For example, `ResourceInDB` inherits from `ResourceBase`.
-*   **Composition/Aggregation:** Indicated by `ClassA o-- ClassB`, meaning ClassA contains or uses instances of ClassB. For example, `ResourceInDB` contains `Event` and `Tag` objects.
-*   **Key Attributes:** Each class lists its primary attributes and their types.
+*   **Herança:** Indicada por `ClasseA <|-- ClasseB`, significando que ClasseB herda de ClasseA. Por exemplo, `RecursoNoBD` herda de `RecursoBase`.
+*   **Composição/Agregação:** Indicada por `ClasseA o-- ClasseB`, significando que ClasseA contém ou usa instâncias de ClasseB. Por exemplo, `RecursoNoBD` contém objetos `Evento` e `Tag`.
+*   **Atributos Chave:** Cada classe lista seus atributos primários e seus tipos.
 
-This diagram provides a high-level overview of the data structure and how different parts of the application's data are organized and related.
+Este diagrama fornece uma visão geral de alto nível da estrutura de dados e como diferentes partes dos dados da aplicação são organizadas e relacionadas.

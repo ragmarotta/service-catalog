@@ -1,35 +1,35 @@
 ```mermaid
 graph TD
-    subgraph User Interface
-        A[Browser/Client] --> B(Frontend - React/Nginx)
+    subgraph Interface do Usuário
+        A[Navegador/Cliente] --> B(Frontend - React/Nginx)
     end
 
-    subgraph Backend Services
+    subgraph Serviços de Backend
         B --> C(Backend - FastAPI/Python)
-        C --> D(MongoDB - Database)
+        C --> D(MongoDB - Banco de Dados)
         C --> E(Redis - Cache/Rate Limiting)
     end
 
-    subgraph External Integrations
-        C -- OAuth2 Authentication --> F(OAuth2 Provider)
+    subgraph Integrações Externas
+        C -- Autenticação OAuth2 --> F(Provedor OAuth2)
     end
 
-    subgraph Deployment
-        A -- Accesses --> G(Docker Compose)
+    subgraph Implantação
+        A -- Acessa --> G(Docker Compose)
         G --> B
         G --> C
         G --> D
         G --> E
     end
 
-    B -- API Calls --> C
-    C -- Reads/Writes --> D
-    C -- Caching/Sessions --> E
+    B -- Chamadas de API --> C
+    C -- Lê/Escreve --> D
+    C -- Cache/Sessões --> E
 ```
 
-### Explanation of the Diagram:
+### Explicação do Diagrama:
 
-*   **User Interface:** The user interacts with the application through their browser, which loads the React frontend served by Nginx.
-*   **Backend Services:** The React frontend communicates with the FastAPI backend for all data operations. The backend, in turn, interacts with MongoDB for persistent data storage and Redis for caching and rate limiting.
-*   **External Integrations:** The backend can integrate with an external OAuth2 provider for user authentication, allowing for single sign-on or centralized identity management.
-*   **Deployment:** All services (Frontend, Backend, MongoDB, Redis) are containerized and orchestrated using Docker Compose, simplifying deployment and ensuring consistency across environments.
+*   **Interface do Usuário:** O usuário interage com a aplicação através do seu navegador, que carrega o frontend React servido pelo Nginx.
+*   **Serviços de Backend:** O frontend React se comunica com o backend FastAPI para todas as operações de dados. O backend, por sua vez, interage com o MongoDB para armazenamento persistente de dados e com o Redis para cache e limitação de taxa (rate limiting).
+*   **Integrações Externas:** O backend pode se integrar com um provedor OAuth2 externo para autenticação de usuários, permitindo single sign-on ou gerenciamento centralizado de identidade.
+*   **Implantação:** Todos os serviços (Frontend, Backend, MongoDB, Redis) são conteinerizados e orquestrados usando Docker Compose, simplificando a implantação e garantindo consistência entre os ambientes.
