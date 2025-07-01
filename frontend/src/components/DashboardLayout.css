@@ -1,0 +1,14 @@
+
+/* DashboardLayout.css */
+
+.dashboard-layout-container {
+  @apply flex h-screen bg-gray-100;
+}
+
+.dashboard-content-wrapper {
+  @apply flex flex-col flex-1 w-full overflow-y-auto;
+}
+
+.dashboard-main-content-area {
+  @apply px-4 py-6 mx-auto sm:px-6 lg:px-8;
+}

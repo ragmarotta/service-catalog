@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
+import './CustomNode.css';
 
 /**
  * Componente customizado para renderizar um nó (recurso) no mapa de serviços.
@@ -8,23 +9,23 @@ import { Handle, Position } from 'reactflow';
  */
 const CustomNode = ({ data }) => {
   return (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400">
+    <div className="custom-node-container">
       {/* Handle Superior: Ponto de entrada para ser um "filho" */}
       <Handle
         type="target"
         position={Position.Top}
-        className="w-16 !bg-teal-500"
+        className="custom-node-handle-top"
         id="top"
       />
       
       {/* Conteúdo do Nó */}
-      <div className="text-center font-bold">{data.label}</div>
+      <div className="custom-node-label">{data.label}</div>
 
       {/* Handle Inferior: Ponto de saída para ser um "pai" */}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-16 !bg-orange-500"
+        className="custom-node-handle-bottom"
         id="bottom"
       />
     </div>

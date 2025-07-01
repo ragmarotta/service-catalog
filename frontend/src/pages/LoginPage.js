@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LockClosedIcon, UserIcon } from '@heroicons/react/24/solid';
+import './LoginPage.css';
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
@@ -28,51 +29,51 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900">Catálogo de Serviços</h2>
-                    <p className="mt-2 text-sm text-gray-600">Faça login para acessar sua conta</p>
+        <div className="login-page-container">
+            <div className="login-form-card">
+                <div className="login-header-text-center">
+                    <h2 className="login-title">Catálogo de Serviços</h2>
+                    <p className="login-subtitle">Faça login para acessar sua conta</p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="login-form" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="p-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                        <div className="login-error-message" role="alert">
                             {error}
                         </div>
                     )}
-                    <div className="relative">
-                        <UserIcon className="absolute w-5 h-5 text-gray-400 top-3.5 left-4"/>
+                    <div className="login-input-wrapper">
+                        <UserIcon className="login-input-icon"/>
                         <input
                             id="username"
                             name="username"
                             type="text"
                             autoComplete="username"
                             required
-                            className="w-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                            className="login-input-field"
                             placeholder="Usuário"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
-                    <div className="relative">
-                        <LockClosedIcon className="absolute w-5 h-5 text-gray-400 top-3.5 left-4"/>
+                    <div className="login-input-wrapper">
+                        <LockClosedIcon className="login-input-icon"/>
                         <input
                             id="password"
                             name="password"
                             type="password"
                             autoComplete="current-password"
                             required
-                            className="w-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                            className="login-input-field"
                             placeholder="Senha"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    <div>
+                    <div className="login-submit-button-wrapper">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="relative flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md group hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+                            className="login-submit-button"
                         >
                             {loading ? 'Entrando...' : 'Entrar'}
                         </button>

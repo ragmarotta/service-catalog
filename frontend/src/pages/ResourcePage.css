@@ -1,0 +1,105 @@
+
+/* ResourcePage.css */
+
+.resource-page-container {
+  @apply max-w-4xl mx-auto;
+}
+
+.resource-page-back-button {
+  @apply flex items-center gap-2 mb-4 text-sm text-gray-600 hover:text-gray-900;
+}
+
+.resource-page-back-icon {
+  @apply w-4 h-4;
+}
+
+.resource-page-card {
+  @apply p-8 bg-white rounded-lg shadow-md;
+}
+
+.resource-page-title {
+  @apply text-2xl font-bold text-gray-800 mb-6;
+}
+
+.resource-page-error-message,
+.resource-page-success-message {
+  @apply p-3 mb-4 text-sm rounded-lg;
+}
+
+.resource-page-error-message {
+  @apply text-red-700 bg-red-100;
+}
+
+.resource-page-success-message {
+  @apply text-green-700 bg-green-100;
+}
+
+.resource-page-form {
+  @apply space-y-6;
+}
+
+.resource-page-form-group {
+  /* No specific styles needed here, just a container */
+}
+
+.resource-page-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.resource-page-input,
+.resource-page-textarea,
+.resource-page-select {
+  @apply mt-1 block w-full border-gray-300 rounded-md shadow-sm;
+}
+
+.resource-page-tags-fieldset {
+  @apply p-4 border rounded-md;
+}
+
+.resource-page-tags-legend {
+  @apply text-sm font-medium text-gray-900 px-2;
+}
+
+.resource-page-tags-list {
+  @apply space-y-4;
+}
+
+.resource-page-tag-item {
+  @apply flex items-center gap-4;
+}
+
+.resource-page-tag-input {
+  @apply flex-1 block w-full border-gray-300 rounded-md shadow-sm uppercase;
+}
+
+.resource-page-remove-tag-button {
+  @apply p-2 text-red-600 hover:text-red-800;
+}
+
+.resource-page-remove-tag-icon {
+  @apply w-5 h-5;
+}
+
+.resource-page-add-tag-button {
+  @apply flex items-center gap-2 mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-800;
+}
+
+.resource-page-add-tag-icon {
+  @apply w-5 h-5;
+}
+
+.resource-page-related-resources-select {
+  @apply h-40;
+}
+
+.resource-page-related-resources-help-text {
+  @apply mt-1 text-xs text-gray-500;
+}
+
+.resource-page-submit-button-wrapper {
+  @apply flex justify-end;
+}
+
+.resource-page-submit-button {
+  @apply px-6 py-2 font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-400;
+}

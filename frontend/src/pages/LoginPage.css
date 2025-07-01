@@ -1,0 +1,50 @@
+
+/* LoginPage.css */
+
+.login-page-container {
+  @apply flex items-center justify-center min-h-screen bg-gray-100;
+}
+
+.login-form-card {
+  @apply w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg;
+}
+
+.login-header-text-center {
+  @apply text-center;
+}
+
+.login-title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.login-subtitle {
+  @apply mt-2 text-sm text-gray-600;
+}
+
+.login-form {
+  @apply mt-8 space-y-6;
+}
+
+.login-error-message {
+  @apply p-3 text-sm text-red-700 bg-red-100 rounded-lg;
+}
+
+.login-input-wrapper {
+  @apply relative;
+}
+
+.login-input-icon {
+  @apply absolute w-5 h-5 text-gray-400 top-3.5 left-4;
+}
+
+.login-input-field {
+  @apply w-full py-3 pl-12 pr-4 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm;
+}
+
+.login-submit-button-wrapper {
+  /* No specific styles needed here, just a container */
+}
+
+.login-submit-button {
+  @apply relative flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400;
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BaseEdge, EdgeLabelRenderer, getBezierPath } from 'reactflow';
+import './CustomEdge.css';
 
 /**
  * Componente customizado para renderizar uma aresta (relação) com um botão de exclusão.
@@ -42,10 +43,10 @@ function CustomEdge({
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: 'all',
           }}
-          className="nodrag nopan"
+          className="custom-edge-button-wrapper"
         >
           <button
-            className="w-2 h-2 bg-red-500 flex items-center justify-center rounded-full text-white text-xs font-bold hover:bg-red-700 transition-colors"
+            className="custom-edge-delete-button"
             onClick={onEdgeClick}
             title="Excluir Relação"
           >

@@ -12,7 +12,7 @@ async def test_read_root(test_client: AsyncClient):
     da resposta é o JSON esperado.
     """
     # Faz uma requisição GET para a rota /api
-    response = await test_client.get("/api")
+    response = await test_client.get("/")
     
     # Afirma que o status code da resposta é 200 (Sucesso)
     assert response.status_code == 200

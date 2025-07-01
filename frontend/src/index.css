@@ -15,3 +15,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #f3f4f6; /* bg-gray-100 */
 }
+
+/* Component Styles */
+@import './components/ConfirmationModal.css';
+@import './components/CustomEdge.css';
+@import './components/CustomNode.css';
+@import './components/DashboardLayout.css';
+@import './components/DotLanguageViewer.css';
+@import './components/Header.css';
+@import './components/Modal.css';
+@import './components/MultiSelectDropdown.css';
+@import './components/NodeContextMenu.css';
+@import './components/Sidebar.css';
+@import './components/UserForm.css';
+@import './components/VisualMap.css';
+
+/* Page Styles */
+@import './pages/EventTimelinePage.css';
+@import './pages/LoginPage.css';
+@import './pages/NotFoundPage.css';
+@import './pages/ResourceListPage.css';
+@import './pages/ResourcePage.css';
+@import './pages/ServiceMapPage.css';
+@import './pages/UserManagementPage.css';

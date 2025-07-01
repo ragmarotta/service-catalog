@@ -12,29 +12,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import CustomNode from '../components/CustomNode';
 import CustomEdge from '../components/CustomEdge';
 import { ArrowsPointingOutIcon, EyeIcon, FunnelIcon } from '@heroicons/react/24/solid';
-
-// --- Componente: Menu de Contexto ---
-/**
- * Renderiza um menu de contexto que aparece com o clique direito num nó.
- * @param {object} props - Propriedades do componente.
- * @param {number} props.top - Posição vertical do menu.
- * @param {number} props.left - Posição horizontal do menu.
- * @param {function} props.onFilterParents - Callback para filtrar pelos pais.
- * @param {function} props.onFilterChildren - Callback para filtrar pelos filhos.
- * @param {function} props.onResetFilter - Callback para limpar o filtro.
- */
-const NodeContextMenu = ({ top, left, onFilterParents, onFilterChildren, onResetFilter }) => {
-  return (
-    <div style={{ top, left }} className="absolute z-50 bg-white rounded-md shadow-lg border text-sm" >
-      <div className="py-1">
-        <button onClick={onFilterParents} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><EyeIcon className="w-4 h-4 text-green-500" /><span>Mostrar Dependentes (Pais)</span></button>
-        <button onClick={onFilterChildren} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><FunnelIcon className="w-4 h-4 text-red-500" /><span>Mostrar Impactados (Filhos)</span></button>
-        <div className="border-t my-1"></div>
-        <button onClick={onResetFilter} className="flex items-center gap-3 w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-left"><ArrowsPointingOutIcon className="w-4 h-4 text-gray-500" /><span>Limpar Filtro</span></button>
-      </div>
-    </div>
-  );
-};
+import NodeContextMenu from '../components/NodeContextMenu';
 
 
 // --- Componente Principal: ServiceMapPage (Contêiner) ---
@@ -301,31 +279,31 @@ const ServiceMapPage = () => {
         }
     };
 
-    const TabButton = ({ isActive, onClick, children }) => (<button onClick={onClick} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${isActive ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>{children}</button>);
+    const TabButton = ({ isActive, onClick, children }) => (<button onClick={onClick} className={`service-map-tab-button ${isActive ? 'service-map-tab-button-active' : 'service-map-tab-button-inactive'}`}>{children}</button>);
 
     return (
-        <div className={isMaximized ? "fixed inset-0 z-40 bg-white" : "flex flex-col h-[calc(100vh-8rem)] bg-white rounded-lg shadow"}>
+        <div className={isMaximized ? "service-map-page-container-maximized" : "service-map-page-container"}>
             {!isMaximized && (
                 <>
-                    <div className="p-4 border-b">
-                        <h1 className="text-xl font-bold text-gray-800">Mapa de Relacionamentos de Serviços</h1>
-                        <form onSubmit={handleFilterSubmit} className="flex flex-wrap items-end gap-4 mt-4">
-                            <div className='flex-grow'><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label><input type="text" name="name" id="name" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" /></div>
-                            <div className='flex-grow'><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" className="block w-full mt-1 border-gray-300 rounded-md shadow-sm" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" /></div>
-                            <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button>
+                    <div className="service-map-header">
+                        <h1 className="service-map-title">Mapa de Relacionamentos de Serviços</h1>
+                        <form onSubmit={handleFilterSubmit} className="service-map-filter-form">
+                            <div className='service-map-filter-group'><label htmlFor="name" className="service-map-filter-label">Nome do Recurso</label><input type="text" name="name" id="name" className="service-map-filter-input" value={filters.name} onChange={handleFilterChange} placeholder="Ex: api-principal" /></div>
+                            <div className='service-map-filter-group'><label htmlFor="tags" className="service-map-filter-label">Tags (chave:valor)</label><input type="text" name="tags" id="tags" className="service-map-filter-input" value={filters.tags} onChange={handleFilterChange} placeholder="Ex: env:prod,app:core" /></div>
+                            <button type="submit" className="service-map-filter-button">Filtrar</button>
                         </form>
                     </div>
-                    <div className="border-b border-gray-200">
-                        <nav className="-mb-px flex space-x-6 px-4" aria-label="Tabs">
+                    <div className="service-map-tabs-container">
+                        <nav className="service-map-tabs-nav" aria-label="Tabs">
                             <TabButton isActive={activeTab === 'visual'} onClick={() => setActiveTab('visual')}>Visual</TabButton>
                             <TabButton isActive={activeTab === 'dot'} onClick={() => setActiveTab('dot')}>Linguagem DOT</TabButton>
                         </nav>
                     </div>
                 </>
             )}
-            <div className="flex-grow w-full h-full relative" ref={mapRef}>
-                {loading && <div className="absolute inset-0 z-10 flex items-center justify-center bg-white bg-opacity-75">A carregar...</div>}
-                {error && !loading && <div className="absolute inset-0 z-10 flex items-center justify-center text-red-600 p-4 text-center">{error}</div>}
+            <div className="service-map-content-area" ref={mapRef}>
+                {loading && <div className="service-map-loading-overlay">A carregar...</div>}
+                {error && !loading && <div className="service-map-error-message">{error}</div>}
                 
                 {activeTab === 'visual' ? (
                     <VisualMap nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onNodeClick={onNodeClick} onPaneClick={onPaneClick} onNodeContextMenu={onNodeContextMenu} onConnect={onConnect} nodeTypes={nodeTypes} edgeTypes={edgeTypes} selectedNode={selectedNode} isMaximized={isMaximized} onToggleMaximize={handleToggleMaximize} />

@@ -1,0 +1,68 @@
+
+/* EventTimelinePage.css */
+
+.event-timeline-page-container {
+  @apply p-8 bg-white rounded-lg shadow-md;
+}
+
+.event-timeline-page-title {
+  @apply text-2xl font-bold text-gray-800 mb-6;
+}
+
+.event-timeline-filters-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 p-4 border rounded-md;
+}
+
+.event-timeline-filter-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.event-timeline-filter-select,
+.event-timeline-filter-input {
+  @apply mt-1 block w-full border-gray-300 rounded-md shadow-sm;
+}
+
+.event-timeline-clear-filter-container {
+  @apply col-span-full flex justify-end;
+}
+
+.event-timeline-clear-filter-button {
+  @apply flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800;
+}
+
+.event-timeline-clear-filter-icon {
+  @apply w-4 h-4;
+}
+
+.event-timeline-loading-message,
+.event-timeline-error-message {
+  @apply text-red-500;
+}
+
+.event-timeline-no-events-message {
+  @apply text-gray-500 text-center py-8;
+}
+
+.event-timeline-events-list {
+  @apply border-l-2 border-indigo-200 ml-6;
+}
+
+.event-timeline-event-item {
+  @apply relative mb-8 pl-12;
+}
+
+.event-timeline-event-dot {
+  @apply absolute -left-2.5 top-1.5 w-5 h-5 rounded-full border-4 border-white;
+}
+
+.event-timeline-event-timestamp {
+  @apply text-sm text-gray-500;
+}
+
+.event-timeline-event-title {
+  @apply text-lg font-semibold text-gray-800 cursor-pointer hover:text-indigo-600 transition-colors;
+}
+
+.event-timeline-event-message {
+  @apply text-gray-600 mt-1;
+}

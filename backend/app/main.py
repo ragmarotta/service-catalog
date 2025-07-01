@@ -78,6 +78,12 @@ app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(resources.router, prefix="/api", tags=["Resources"])
 
 
+@app.get("/")
+async def read_root():
+    """Endpoint raiz que retorna uma mensagem de boas-vindas."""
+    return {"message": "Bem-vindo à API do Catálogo de Serviços!"}
+
+
 @app.get("/api/health")
 async def health_check():
     """Endpoint simples para verificar a saúde da API."""

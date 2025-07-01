@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/solid';
+import './DotLanguageViewer.css';
 
 // --- Componente: DotLanguageViewer ---
 // Responsável por exibir o script DOT e a funcionalidade de cópia.
@@ -23,15 +24,15 @@ const DotLanguageViewer = ({ dotScript }) => {
     };
 
     return (
-        <div className="w-full h-full bg-gray-900 flex flex-col">
-            <div className="flex justify-end p-2 bg-gray-800">
-                <button onClick={handleCopyToClipboard} className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
-                    <ClipboardDocumentIcon className="w-4 h-4" />
+        <div className="dot-viewer-container">
+            <div className="dot-viewer-header">
+                <button onClick={handleCopyToClipboard} className="dot-viewer-copy-button">
+                    <ClipboardDocumentIcon className="dot-viewer-copy-icon" />
                     <span>{copySuccess || 'Copiar'}</span>
                 </button>
             </div>
-            <div className="w-full h-full overflow-auto p-4">
-                <pre><code className="text-gray-300 text-sm">{dotScript}</code></pre>
+            <div className="dot-viewer-content">
+                <pre><code className="dot-viewer-code">{dotScript}</code></pre>
             </div>
         </div>
     );

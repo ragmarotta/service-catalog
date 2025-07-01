@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { PlusIcon, TrashIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
+import './ResourcePage.css';
 
 /**
  * Componente de página para criar ou editar um Recurso.
@@ -183,60 +184,60 @@ const ResourcePage = () => {
     if (loading && isEditing) return <div className="text-center p-8">Carregando dados do recurso...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <button onClick={() => navigate('/resources')} className="flex items-center gap-2 mb-4 text-sm text-gray-600 hover:text-gray-900">
-                <ArrowLeftIcon className="w-4 h-4" />
+        <div className="resource-page-container">
+            <button onClick={() => navigate('/resources')} className="resource-page-back-button">
+                <ArrowLeftIcon className="resource-page-back-icon" />
                 Voltar à Lista
             </button>
-            <div className="p-8 bg-white rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">{isEditing ? 'Editar Recurso' : 'Cadastrar Novo Recurso'}</h1>
+            <div className="resource-page-card">
+                <h1 className="resource-page-title">{isEditing ? 'Editar Recurso' : 'Cadastrar Novo Recurso'}</h1>
                 
-                {error && <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>}
-                {success && <div className="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">{success}</div>}
+                {error && <div className="resource-page-error-message">{error}</div>}
+                {success && <div className="resource-page-success-message">{success}</div>}
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="resource-page-form">
                     {/* Campo de Nome */}
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome do Recurso</label>
-                        <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                    <div className="resource-page-form-group">
+                        <label htmlFor="name" className="resource-page-label">Nome do Recurso</label>
+                        <input type="text" id="name" value={name} onChange={e => setName(e.target.value)} required className="resource-page-input" />
                     </div>
                     {/* Campo de Descrição */}
-                    <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-                        <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows="3" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"></textarea>
+                    <div className="resource-page-form-group">
+                        <label htmlFor="description" className="resource-page-label">Descrição</label>
+                        <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows="3" className="resource-page-textarea"></textarea>
                     </div>
 
                     {/* Secção de Tags Dinâmicas */}
-                    <fieldset className="p-4 border rounded-md">
-                        <legend className="text-sm font-medium text-gray-900 px-2">Tags (Chave/Valor)</legend>
-                        <div className="space-y-4">
+                    <fieldset className="resource-page-tags-fieldset">
+                        <legend className="resource-page-tags-legend">Tags (Chave/Valor)</legend>
+                        <div className="resource-page-tags-list">
                             {tags.map((tag, index) => (
-                                <div key={index} className="flex items-center gap-4">
-                                    <input type="text" name="key" value={tag.key} onChange={e => handleTagChange(index, e)} placeholder="Chave (ex: AMBIENTE)" className="flex-1 block w-full border-gray-300 rounded-md shadow-sm uppercase" list="tag-keys-list"/>
+                                <div key={index} className="resource-page-tag-item">
+                                    <input type="text" name="key" value={tag.key} onChange={e => handleTagChange(index, e)} placeholder="Chave (ex: AMBIENTE)" className="resource-page-tag-input" list="tag-keys-list"/>
                                     <datalist id="tag-keys-list">
                                         {allTagKeys.map(key => <option key={key} value={key} />)}
                                     </datalist>
-                                    <input type="text" name="value" value={tag.value} onChange={e => handleTagChange(index, e)} placeholder="Valor (ex: PRODUCAO)" className="flex-1 block w-full border-gray-300 rounded-md shadow-sm uppercase"/>
-                                    <button type="button" onClick={() => handleRemoveTag(index)} className="p-2 text-red-600 hover:text-red-800" title="Remover Tag"><TrashIcon className="w-5 h-5" /></button>
+                                    <input type="text" name="value" value={tag.value} onChange={e => handleTagChange(index, e)} placeholder="Valor (ex: PRODUCAO)" className="resource-page-tag-input"/>
+                                    <button type="button" onClick={() => handleRemoveTag(index)} className="resource-page-remove-tag-button" title="Remover Tag"><TrashIcon className="resource-page-remove-tag-icon" /></button>
                                 </div>
                             ))}
                         </div>
-                        <button type="button" onClick={handleAddTag} className="flex items-center gap-2 mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-800"><PlusIcon className="w-5 h-5" />Adicionar Tag</button>
+                        <button type="button" onClick={handleAddTag} className="resource-page-add-tag-button"><PlusIcon className="resource-page-add-tag-icon" />Adicionar Tag</button>
                     </fieldset>
                     
                     {/* Seletor de Relações */}
-                    <div>
-                        <label htmlFor="relatedResources" className="block text-sm font-medium text-gray-700">Recursos Relacionados (Filhos)</label>
-                        <select id="relatedResources" multiple value={relatedResources} onChange={handleRelatedResourcesChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm h-40">
+                    <div className="resource-page-form-group">
+                        <label htmlFor="relatedResources" className="resource-page-label">Recursos Relacionados (Filhos)</label>
+                        <select id="relatedResources" multiple value={relatedResources} onChange={handleRelatedResourcesChange} className="resource-page-select resource-page-related-resources-select">
                             {allResources.map(res => (<option key={res.id} value={res.id}>{res.name}</option>))}
                         </select>
-                        <p className="mt-1 text-xs text-gray-500">Segure Ctrl (ou Cmd no Mac) para selecionar múltiplos.</p>
+                        <p className="resource-page-related-resources-help-text">Segure Ctrl (ou Cmd no Mac) para selecionar múltiplos.</p>
                     </div>
 
                     {/* Botão de Submissão */}
                     {canEdit && (
-                         <div className="flex justify-end">
-                            <button type="submit" disabled={loading} className="px-6 py-2 font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-400">
+                         <div className="resource-page-submit-button-wrapper">
+                            <button type="submit" disabled={loading} className="resource-page-submit-button">
                                 {loading ? 'Salvando...' : 'Salvar Alterações'}
                             </button>
                         </div>

@@ -1,0 +1,70 @@
+
+/* ServiceMapPage.css */
+
+.service-map-page-container {
+  @apply flex flex-col h-[calc(100vh-8rem)] bg-white rounded-lg shadow;
+}
+
+.service-map-page-container-maximized {
+  @apply fixed inset-0 z-40 bg-white;
+}
+
+.service-map-header {
+  @apply p-4 border-b;
+}
+
+.service-map-title {
+  @apply text-xl font-bold text-gray-800;
+}
+
+.service-map-filter-form {
+  @apply flex flex-wrap items-end gap-4 mt-4;
+}
+
+.service-map-filter-group {
+  @apply flex-grow;
+}
+
+.service-map-filter-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.service-map-filter-input {
+  @apply block w-full mt-1 border-gray-300 rounded-md shadow-sm;
+}
+
+.service-map-filter-button {
+  @apply px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700;
+}
+
+.service-map-tabs-container {
+  @apply border-b border-gray-200;
+}
+
+.service-map-tabs-nav {
+  @apply -mb-px flex space-x-6 px-4;
+}
+
+.service-map-tab-button {
+  @apply whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm;
+}
+
+.service-map-tab-button-active {
+  @apply border-indigo-500 text-indigo-600;
+}
+
+.service-map-tab-button-inactive {
+  @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+}
+
+.service-map-content-area {
+  @apply flex-grow w-full h-full relative;
+}
+
+.service-map-loading-overlay {
+  @apply absolute inset-0 z-10 flex items-center justify-center bg-white bg-opacity-75;
+}
+
+.service-map-error-message {
+  @apply absolute inset-0 z-10 flex items-center justify-center text-red-600 p-4 text-center;
+}

@@ -1,0 +1,25 @@
+
+/* CustomEdge.css */
+
+.custom-edge-button-wrapper.nodrag.nopan {
+  /* Esta classe combina as classes do react-flow com um seletor CSS, sem usar @apply */
+}
+
+.custom-edge-delete-button {
+  width: 0.5rem; /* w-2 */
+  height: 0.5rem; /* h-2 */
+  background-color: #ef4444; /* bg-red-500 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px; /* rounded-full */
+  color: #ffffff; /* text-white */
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 700; /* font-bold */
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.custom-edge-delete-button:hover {
+  background-color: #b91c1c; /* hover:bg-red-700 */
+}

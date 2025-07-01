@@ -1,0 +1,54 @@
+
+/* MultiSelectDropdown.css */
+
+.multi-select-dropdown-container {
+  @apply relative;
+}
+
+.multi-select-dropdown-button {
+  @apply relative w-full cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm;
+}
+
+.multi-select-dropdown-button-text {
+  @apply block truncate;
+}
+
+.multi-select-dropdown-button-icon-wrapper {
+  @apply pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2;
+}
+
+.multi-select-dropdown-button-icon {
+  @apply h-5 w-5 text-gray-400;
+}
+
+.multi-select-dropdown-options-list {
+  @apply absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm;
+}
+
+.multi-select-dropdown-option-item {
+  @apply relative cursor-default select-none py-2 pl-8 pr-4 text-gray-900 hover:bg-indigo-600 hover:text-white;
+}
+
+.multi-select-dropdown-option-text {
+  @apply block truncate;
+}
+
+.multi-select-dropdown-option-text-selected {
+  @apply font-semibold;
+}
+
+.multi-select-dropdown-option-text-normal {
+  @apply font-normal;
+}
+
+.multi-select-dropdown-option-check-icon-wrapper {
+  @apply absolute inset-y-0 left-0 flex items-center pl-1.5 text-indigo-600;
+}
+
+.multi-select-dropdown-option-check-icon {
+  @apply h-5 w-5;
+}
+
+.multi-select-dropdown-no-options {
+  @apply px-4 py-2 text-gray-500;
+}

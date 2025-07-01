@@ -1,0 +1,110 @@
+
+/* UserManagementPage.css */
+
+.user-management-page-container {
+  @apply p-8 bg-white rounded-lg shadow-md;
+}
+
+.user-management-header {
+  @apply flex justify-between items-center mb-6;
+}
+
+.user-management-title {
+  @apply text-2xl font-bold text-gray-800;
+}
+
+.user-management-new-user-button {
+  @apply flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700;
+}
+
+.user-management-new-user-icon {
+  @apply w-5 h-5;
+}
+
+.user-management-loading-message {
+  @apply text-center;
+}
+
+.user-management-error-message {
+  @apply text-red-500;
+}
+
+.user-management-table-wrapper {
+  @apply overflow-x-auto;
+}
+
+.user-management-table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.user-management-table-header {
+  @apply bg-gray-50;
+}
+
+.user-management-table-header-cell {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.user-management-table-body {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.user-management-table-row {
+  /* No specific styles needed here, just a container */
+}
+
+.user-management-table-cell {
+  @apply px-6 py-4 whitespace-nowrap;
+}
+
+.user-management-user-info {
+  @apply flex items-center;
+}
+
+.user-management-user-icon {
+  @apply w-8 h-8 text-gray-400 mr-3;
+}
+
+.user-management-user-details {
+  /* No specific styles needed here, just a container */
+}
+
+.user-management-user-name {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.user-management-user-email {
+  @apply text-sm text-gray-500;
+}
+
+.user-management-user-role {
+  @apply whitespace-nowrap text-sm text-gray-500 capitalize;
+}
+
+.user-management-user-status {
+  @apply px-2 inline-flex text-xs leading-5 font-semibold rounded-full;
+}
+
+.user-management-user-status-disabled {
+  @apply bg-red-100 text-red-800;
+}
+
+.user-management-user-status-active {
+  @apply bg-green-100 text-green-800;
+}
+
+.user-management-actions-cell {
+  @apply whitespace-nowrap text-right text-sm font-medium;
+}
+
+.user-management-action-button {
+  @apply text-indigo-600 hover:text-indigo-900 mr-4;
+}
+
+.user-management-action-icon {
+  @apply w-5 h-5;
+}
+
+.user-management-delete-button {
+  @apply text-red-600 hover:text-red-900;
+}

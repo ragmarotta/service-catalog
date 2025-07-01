@@ -1,0 +1,58 @@
+
+/* Sidebar.css */
+
+.sidebar-container {
+  @apply z-30 flex flex-col flex-shrink-0 text-white bg-gray-800 transition-all duration-300 ease-in-out;
+}
+
+.sidebar-header {
+  @apply flex items-center justify-between h-16 px-4 border-b border-gray-700;
+}
+
+.sidebar-logo-link {
+  @apply flex items-center;
+}
+
+.sidebar-logo-icon {
+  @apply w-8 h-8 text-indigo-400;
+}
+
+.sidebar-logo-text {
+  @apply ml-3 text-xl font-semibold;
+}
+
+.sidebar-toggle-button {
+  @apply p-1 rounded-full hover:bg-gray-700 focus:outline-none;
+}
+
+.sidebar-toggle-icon {
+  @apply w-6 h-6 transition-transform duration-300;
+}
+
+.sidebar-nav {
+  @apply flex-1 px-2 py-4 space-y-2;
+}
+
+.sidebar-nav-link {
+  @apply flex items-center px-4 py-3 text-gray-300 transition-colors duration-200 transform rounded-md hover:bg-gray-700 hover:text-white;
+}
+
+.sidebar-nav-link-active {
+  @apply bg-gray-700 text-white;
+}
+
+.sidebar-nav-icon {
+  @apply w-6 h-6;
+}
+
+.sidebar-nav-text {
+  @apply mx-4 font-medium;
+}
+
+.sidebar-footer {
+  @apply px-2 py-4 mt-auto border-t border-gray-700;
+}
+
+.sidebar-logout-button {
+  @apply w-full;
+}

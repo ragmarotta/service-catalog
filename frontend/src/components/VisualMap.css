@@ -1,0 +1,78 @@
+
+/* VisualMap.css */
+
+.visual-map-legend {
+  @apply absolute bottom-4 left-4 z-10 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-lg border text-xs;
+}
+
+.visual-map-legend-title {
+  @apply font-bold mb-2 text-gray-700;
+}
+
+.visual-map-legend-item {
+  @apply flex items-center gap-2;
+}
+
+.visual-map-legend-icon-up {
+  @apply w-4 h-4 text-green-500;
+}
+
+.visual-map-legend-icon-down {
+  @apply w-4 h-4 text-red-500;
+}
+
+.visual-map-legend-text {
+  @apply text-gray-600;
+}
+
+.visual-map-maximize-button-wrapper {
+  @apply absolute top-4 right-4 z-10;
+}
+
+.visual-map-maximize-button {
+  @apply bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg border text-gray-600 hover:text-indigo-600 transition-colors;
+}
+
+.visual-map-maximize-icon {
+  @apply w-5 h-5;
+}
+
+.visual-map-react-flow {
+  @apply bg-gray-50;
+}
+
+.visual-map-selected-node-panel {
+  @apply absolute p-4 m-4 bg-white rounded-lg shadow-xl top-0 right-0 max-w-sm z-20 border;
+}
+
+.visual-map-selected-node-close-button {
+  @apply absolute top-2 right-2 text-gray-500 hover:text-gray-800;
+}
+
+.visual-map-selected-node-title {
+  @apply text-lg font-bold text-indigo-700;
+}
+
+.visual-map-selected-node-description {
+  @apply mt-2 text-sm text-gray-600;
+}
+
+.visual-map-selected-node-tags-section {
+  @apply mt-4;
+}
+
+.visual-map-selected-node-tags-title {
+  @apply font-semibold text-gray-800;
+}
+
+.visual-map-selected-node-tags-list {
+  @apply flex flex-wrap gap-2 mt-2;
+}
+
+.visual-map-selected-node-tag {
+  @apply px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full;
+}
+
+.visual-map-selected-node-no-tags {
+  @apply text-sm text-gray-500;
+}

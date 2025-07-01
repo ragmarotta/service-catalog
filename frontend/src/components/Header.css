@@ -1,0 +1,30 @@
+
+/* Header.css */
+
+.header-container {
+  @apply flex items-center justify-between h-16 px-6 bg-white border-b;
+}
+
+.header-sidebar-toggle-button {
+  @apply text-gray-500 focus:outline-none lg:hidden;
+}
+
+.header-sidebar-toggle-icon {
+  @apply w-6 h-6;
+}
+
+.header-spacer {
+  @apply flex-1;
+}
+
+.header-user-info {
+  @apply flex items-center;
+}
+
+.header-welcome-text {
+  @apply hidden mr-4 text-sm font-medium text-gray-700 sm:block;
+}
+
+.header-user-icon {
+  @apply w-8 h-8 text-gray-400;
+}

@@ -3,6 +3,7 @@ import apiClient from '../services/api';
 import Modal from '../components/Modal'; // Componente de Modal reutilizável
 import ConfirmationModal from '../components/ConfirmationModal'; // Componente de confirmação
 import { PencilIcon, TrashIcon, PlusIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import './UserManagementPage.css';
 
 const UserManagementPage = () => {
     // Estado para armazenar a lista de usuários
@@ -116,40 +117,40 @@ const UserManagementPage = () => {
         };
 
         return (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="user-form-container">
                 {/* Campos do formulário */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Usuário</label>
-                    <input type="text" name="username" value={formData.username} onChange={handleChange} required disabled={!!user} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm disabled:bg-gray-100" />
+                <div className="user-form-group">
+                    <label className="user-form-label">Usuário</label>
+                    <input type="text" name="username" value={formData.username} onChange={handleChange} required disabled={!!user} className="user-form-input user-form-input-disabled" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">E-mail</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                <div className="user-form-group">
+                    <label className="user-form-label">E-mail</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="user-form-input" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
-                    <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                <div className="user-form-group">
+                    <label className="user-form-label">Nome Completo</label>
+                    <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} className="user-form-input" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Senha</label>
-                    <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder={user ? 'Deixe em branco para não alterar' : 'Senha obrigatória'} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+                <div className="user-form-group">
+                    <label className="user-form-label">Senha</label>
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder={user ? 'Deixe em branco para não alterar' : 'Senha obrigatória'} className="user-form-input" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Permissão</label>
-                    <select name="role" value={formData.role} onChange={handleChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                <div className="user-form-group">
+                    <label className="user-form-label">Permissão</label>
+                    <select name="role" value={formData.role} onChange={handleChange} className="user-form-select">
                         <option value="administrador">Administrador</option>
                         <option value="usuario">Usuário</option>
                         <option value="visualizador">Visualizador</option>
                     </select>
                 </div>
-                <div className="flex items-center">
-                    <input type="checkbox" id="disabled" name="disabled" checked={formData.disabled} onChange={handleChange} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                    <label htmlFor="disabled" className="ml-2 block text-sm text-gray-900">Desabilitado</label>
+                <div className="user-form-checkbox-group">
+                    <input type="checkbox" id="disabled" name="disabled" checked={formData.disabled} onChange={handleChange} className="user-form-checkbox" />
+                    <label htmlFor="disabled" className="user-form-checkbox-label">Desabilitado</label>
                 </div>
                 {/* Botões de Ação */}
-                <div className="flex justify-end gap-4 pt-4">
-                    <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancelar</button>
-                    <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Salvar</button>
+                <div className="user-form-actions">
+                    <button type="button" onClick={onCancel} className="user-form-cancel-button">Cancelar</button>
+                    <button type="submit" className="user-form-submit-button">Salvar</button>
                 </div>
             </form>
         );
@@ -157,51 +158,51 @@ const UserManagementPage = () => {
 
 
     return (
-        <div className="p-8 bg-white rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gerenciamento de Usuários</h1>
-                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                    <PlusIcon className="w-5 h-5" />
+        <div className="user-management-page-container">
+            <div className="user-management-header">
+                <h1 className="user-management-title">Gerenciamento de Usuários</h1>
+                <button onClick={() => handleOpenModal()} className="user-management-new-user-button">
+                    <PlusIcon className="user-management-new-user-icon" />
                     Novo Usuário
                 </button>
             </div>
-            {loading && <p>Carregando...</p>}
-            {error && <p className="text-red-500">{error}</p>}
+            {loading && <p className="user-management-loading-message">Carregando...</p>}
+            {error && <p className="user-management-error-message">{error}</p>}
             
             {/* Tabela de Usuários */}
             {!loading && !error && (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                <div className="user-management-table-wrapper">
+                    <table className="user-management-table">
+                        <thead className="user-management-table-header">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissão</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                <th className="user-management-table-header-cell">Usuário</th>
+                                <th className="user-management-table-header-cell">Permissão</th>
+                                <th className="user-management-table-header-cell">Status</th>
+                                <th className="user-management-table-header-cell">Ações</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="user-management-table-body">
                             {users.map((user) => (
-                                <tr key={user.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <UserCircleIcon className="w-8 h-8 text-gray-400 mr-3" />
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-900">{user.full_name || user.username}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
+                                <tr key={user.id} className="user-management-table-row">
+                                    <td className="user-management-table-cell">
+                                        <div className="user-management-user-info">
+                                            <UserCircleIcon className="user-management-user-icon" />
+                                            <div className="user-management-user-details">
+                                                <div className="user-management-user-name">{user.full_name || user.username}</div>
+                                                <div className="user-management-user-email">{user.email}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{user.role}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.disabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                    <td className="user-management-table-cell user-management-user-role">{user.role}</td>
+                                    <td className="user-management-table-cell">
+                                        <span className={`user-management-user-status ${user.disabled ? 'user-management-user-status-disabled' : 'user-management-user-status-active'}`}>
                                             {user.disabled ? 'Desabilitado' : 'Ativo'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => handleOpenModal(user)} className="text-indigo-600 hover:text-indigo-900 mr-4"><PencilIcon className="w-5 h-5"/></button>
+                                    <td className="user-management-actions-cell">
+                                        <button onClick={() => handleOpenModal(user)} className="user-management-action-button"><PencilIcon className="user-management-action-icon"/></button>
                                         {user.username !== 'root' && (
-                                            <button onClick={() => handleOpenConfirmModal(user)} className="text-red-600 hover:text-red-900"><TrashIcon className="w-5 h-5"/></button>
+                                            <button onClick={() => handleOpenConfirmModal(user)} className="user-management-delete-button"><TrashIcon className="user-management-action-icon"/></button>
                                         )}
                                     </td>
                                 </tr>

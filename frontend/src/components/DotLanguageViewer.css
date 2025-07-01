@@ -1,0 +1,26 @@
+
+/* DotLanguageViewer.css */
+
+.dot-viewer-container {
+  @apply w-full h-full bg-gray-900 flex flex-col;
+}
+
+.dot-viewer-header {
+  @apply flex justify-end p-2 bg-gray-800;
+}
+
+.dot-viewer-copy-button {
+  @apply flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700;
+}
+
+.dot-viewer-copy-icon {
+  @apply w-4 h-4;
+}
+
+.dot-viewer-content {
+  @apply w-full h-full overflow-auto p-4;
+}
+
+.dot-viewer-code {
+  @apply text-gray-300 text-sm;
+}

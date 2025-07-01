@@ -204,64 +204,64 @@ const ResourceListPage = () => {
     };
     
     const NameList = ({ names, icon, colorClass }) => {
-        if (!names || names.length === 0) return <span className="text-gray-400">-</span>;
-        return (<div className="flex flex-col gap-1">{names.map((name, index) => (<div key={index} className={`inline-flex items-center gap-1.5 text-xs text-left ${colorClass}`}>{icon}<span>{name}</span></div>))}</div>);
+        if (!names || names.length === 0) return <span className="resource-list-name-list-no-items">-</span>;
+        return (<div className="resource-list-name-list-container">{names.map((name, index) => (<div key={index} className={`resource-list-name-list-item ${colorClass}`}>{icon}<span>{name}</span></div>))}</div>);
     };
 
     return (
-        <div className="p-8 bg-white rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Gerenciamento de Recursos</h1>
-                <div className="flex items-center gap-4">
-                    {canEdit && (<><input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" /><button onClick={handleImportClick} disabled={isImporting} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50">{isImporting ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <ArrowUpTrayIcon className="w-5 h-5" />}<span>{isImporting ? 'Importando...' : 'Importar'}</span></button></>)}
-                    <button onClick={handleExport} className="px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-300 rounded-md hover:bg-indigo-50">Exportar</button>
-                    {canEdit && (<Link to="/resources/new" className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"><PlusIcon className="w-5 h-5" />Novo</Link>)}
+        <div className="resource-list-page-container">
+            <div className="resource-list-header">
+                <h1 className="resource-list-title">Gerenciamento de Recursos</h1>
+                <div className="resource-list-actions">
+                    {canEdit && (<><input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="resource-list-import-input" /><button onClick={handleImportClick} disabled={isImporting} className="resource-list-import-button">{isImporting ? <div className="resource-list-import-loading-spinner"></div> : <ArrowUpTrayIcon className="resource-list-import-icon" />}<span>{isImporting ? 'Importando...' : 'Importar'}</span></button></>)}
+                    <button onClick={handleExport} className="resource-list-export-button">Exportar</button>
+                    {canEdit && (<Link to="/resources/new" className="resource-list-new-button"><PlusIcon className="resource-list-new-icon" />Novo</Link>)}
                 </div>
             </div>
 
-            {error && <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>}
-            {success && <div className="p-3 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">{success}</div>}
+            {error && <div className="resource-list-error-message">{error}</div>}
+            {success && <div className="resource-list-success-message">{success}</div>}
 
-            <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-4 border rounded-md bg-gray-50">
-                <div><label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label><input type="text" name="name" id="name" value={filters.name} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: api-principal" /></div>
-                <div><label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (chave:valor)</label><input type="text" name="tags" id="tags" value={filters.tags} onChange={handleFilterChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="ex: env:prod,app:core" /></div>
-                <div className="flex items-end"><button type="submit" className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700">Filtrar</button></div>
+            <form onSubmit={handleFilterSubmit} className="resource-list-filters-form">
+                <div><label htmlFor="name" className="resource-list-filter-label">Nome</label><input type="text" name="name" id="name" value={filters.name} onChange={handleFilterChange} className="resource-list-filter-input" placeholder="ex: api-principal" /></div>
+                <div><label htmlFor="tags" className="resource-list-filter-label">Tags (chave:valor)</label><input type="text" name="tags" id="tags" value={filters.tags} onChange={handleFilterChange} className="resource-list-filter-input" placeholder="ex: env:prod,app:core" /></div>
+                <div className="resource-list-filter-button-wrapper"><button type="submit" className="resource-list-filter-button">Filtrar</button></div>
             </form>
             
             {selectedResources.length > 0 && isAdmin && (
-                <div className="bg-sky-50 border border-sky-200 rounded-md p-4 mb-6 flex items-center justify-between">
-                    <span className="text-sm font-medium text-sky-800">{selectedResources.length} recurso(s) selecionado(s)</span>
-                    <button onClick={() => openDeleteModal(null)} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"><TrashIcon className="w-4 h-4"/>Excluir Selecionados</button>
+                <div className="resource-list-bulk-actions-bar">
+                    <span className="resource-list-bulk-actions-text">{selectedResources.length} recurso(s) selecionado(s)</span>
+                    <button onClick={() => openDeleteModal(null)} className="resource-list-bulk-delete-button"><TrashIcon className="resource-list-bulk-delete-icon"/>Excluir Selecionados</button>
                 </div>
             )}
             
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="resource-list-table-wrapper">
+                <table className="resource-list-table">
+                    <thead className="resource-list-table-header">
                         <tr>
-                            <th className="px-6 py-3 text-left"><input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600" checked={resources.length > 0 && selectedResources.length === resources.length} ref={input => { if (input) { input.indeterminate = selectedResources.length > 0 && selectedResources.length < resources.length; } }} onChange={handleSelectAll} /></th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><button onClick={() => handleSort('name')} className="flex items-center gap-2 group">Nome{sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? <ArrowUpIcon className="w-4 h-4"/> : <ArrowDownIcon className="w-4 h-4"/>) : (<ChevronUpDownIcon className="w-4 h-4 text-gray-400"/>)}</button></th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pais</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Filhos</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tags</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                            <th className="resource-list-table-header-cell"><input type="checkbox" className="resource-list-table-header-checkbox" checked={resources.length > 0 && selectedResources.length === resources.length} ref={input => { if (input) { input.indeterminate = selectedResources.length > 0 && selectedResources.length < resources.length; } }} onChange={handleSelectAll} /></th>
+                            <th className="resource-list-table-header-cell"><button onClick={() => handleSort('name')} className="resource-list-table-header-sort-button">Nome{sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? <ArrowUpIcon className="resource-list-table-header-sort-icon"/> : <ArrowDownIcon className="resource-list-table-header-sort-icon"/>) : (<ChevronUpDownIcon className="resource-list-table-header-sort-icon-default"/>)}</button></th>
+                            <th className="resource-list-table-header-cell">Pais</th>
+                            <th className="resource-list-table-header-cell">Filhos</th>
+                            <th className="resource-list-table-header-cell">Tags</th>
+                            <th className="resource-list-table-header-cell">Ações</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="resource-list-table-body">
                         {loading ? (
-                            <tr><td colSpan="6" className="text-center py-8">Carregando...</td></tr>
+                            <tr><td colSpan="6" className="resource-list-table-row-loading">Carregando...</td></tr>
                         ) : (
                             sortedResources.map((resource) => (
-                                <tr key={resource.id} className={selectedResources.includes(resource.id) ? 'bg-sky-50' : ''}>
-                                    <td className="px-6 py-4"><input type="checkbox" className="h-4 w-4 rounded" checked={selectedResources.includes(resource.id)} onChange={(e) => handleSelectOne(e, resource.id)} /></td>
-                                    <td className="px-6 py-4 font-medium text-gray-900">{resource.name}</td>
-                                    <td className="px-6 py-4"><NameList names={resource.parents} icon={<ArrowUpIcon className="w-3 h-3" />} colorClass="text-green-700" /></td>
-                                    <td className="px-6 py-4"><NameList names={resource.children} icon={<ArrowDownIcon className="w-3 h-3" />} colorClass="text-purple-700" /></td>
-                                    <td className="px-6 py-4"><div className="flex flex-wrap gap-1">{resource.tags.map(tag => (<button key={`${tag.key}-${tag.value}`} onClick={() => handleTagClick(tag)} title={`Filtrar por ${tag.key}:${tag.value}`} className="px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full flex items-center gap-1 hover:bg-blue-200"><TagIcon className="w-3 h-3"/> {tag.key}:{tag.value}</button>))}</div></td>
-                                    <td className="px-6 py-4 text-right text-sm font-medium">
-                                        {canEdit && <button onClick={() => handleCloneResource(resource.id)} disabled={cloneLoading === resource.id} className="text-gray-500 hover:text-indigo-600 mr-4 disabled:opacity-50" title="Clonar">{cloneLoading === resource.id ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <DocumentDuplicateIcon className="w-5 h-5"/>}</button>}
-                                        {canEdit && <button onClick={() => navigate(`/resources/edit/${resource.id}`)} className="text-indigo-600 hover:text-indigo-900 mr-4" title="Editar"><PencilIcon className="w-5 h-5"/></button>}
-                                        {isAdmin && <button onClick={() => openDeleteModal(resource)} className="text-red-600 hover:text-red-900" title="Excluir"><TrashIcon className="w-5 h-5"/></button>}
+                                <tr key={resource.id} className={selectedResources.includes(resource.id) ? 'resource-list-table-row-selected' : ''}>
+                                    <td className="resource-list-table-cell"><input type="checkbox" className="resource-list-table-cell-checkbox" checked={selectedResources.includes(resource.id)} onChange={(e) => handleSelectOne(e, resource.id)} /></td>
+                                    <td className="resource-list-table-cell resource-list-table-cell-name">{resource.name}</td>
+                                    <td className="resource-list-table-cell"><NameList names={resource.parents} icon={<ArrowUpIcon className="resource-list-name-list-icon" />} colorClass="text-green-700" /></td>
+                                    <td className="resource-list-table-cell"><NameList names={resource.children} icon={<ArrowDownIcon className="resource-list-name-list-icon" />} colorClass="text-purple-700" /></td>
+                                    <td className="resource-list-table-cell"><div className="resource-list-tags-container">{resource.tags.map(tag => (<button key={`${tag.key}-${tag.value}`} onClick={() => handleTagClick(tag)} title={`Filtrar por ${tag.key}:${tag.value}`} className="resource-list-tag-button"><TagIcon className="resource-list-tag-icon"/> {tag.key}:{tag.value}</button>))}</div></td>
+                                    <td className="resource-list-actions-cell">
+                                        {canEdit && <button onClick={() => handleCloneResource(resource.id)} disabled={cloneLoading === resource.id} className="resource-list-action-button" title="Clonar">{cloneLoading === resource.id ? <div className="resource-list-action-button-clone-loading"></div> : <DocumentDuplicateIcon className="resource-list-action-icon"/>}</button>}
+                                        {canEdit && <button onClick={() => navigate(`/resources/edit/${resource.id}`)} className="resource-list-action-button resource-list-action-button-edit" title="Editar"><PencilIcon className="resource-list-action-icon"/></button>}
+                                        {isAdmin && <button onClick={() => openDeleteModal(resource)} className="resource-list-action-button resource-list-action-button-delete" title="Excluir"><TrashIcon className="resource-list-action-icon"/></button>}
                                     </td>
                                 </tr>
                             ))

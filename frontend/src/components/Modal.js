@@ -2,6 +2,7 @@ import React from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/solid';
+import './Modal.css';
 
 // Componente de Modal genérico e reutilizável
 const Modal = ({ isOpen, onClose, title, children }) => {
@@ -18,11 +19,11 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    <div className="modal-overlay" />
                 </Transition.Child>
 
-                <div className="fixed inset-0 overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                <div className="modal-panel-wrapper">
+                    <div className="modal-panel-container">
                         <Transition.Child
                             as={Fragment}
                             enter="ease-out duration-300"
@@ -32,14 +33,14 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                            <Dialog.Panel className="modal-panel">
+                                <Dialog.Title as="h3" className="modal-title">
                                     {title}
                                 </Dialog.Title>
-                                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                                    <XMarkIcon className="w-6 h-6" />
+                                <button onClick={onClose} className="modal-close-button">
+                                    <XMarkIcon className="modal-close-icon" />
                                 </button>
-                                <div className="mt-4">
+                                <div className="modal-content">
                                     {children}
                                 </div>
                             </Dialog.Panel>

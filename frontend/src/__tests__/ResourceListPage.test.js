@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import ResourceListPage from '../pages/ResourceListPage';
 import apiClient from '../services/api';
@@ -41,8 +41,9 @@ describe('ResourceListPage', () => {
         expect(apiClient.get).toHaveBeenCalledWith('/resources?');
 
         // Aguarda o componente re-renderizar com os dados e afirma que os nomes estão no ecrã.
-        expect(await screen.findByText('API Principal')).toBeInTheDocument();
-        expect(screen.getByText('Serviço de Cache')).toBeInTheDocument();
+        const tableBody = screen.getByRole('table').querySelector('tbody');
+        expect(within(tableBody).getByText('API Principal')).toBeInTheDocument();
+        expect(within(tableBody).getByText('Serviço de Cache')).toBeInTheDocument();
     });
 
     test('deve exibir uma mensagem de erro em caso de falha da API', async () => {
@@ -62,7 +63,8 @@ describe('ResourceListPage', () => {
         renderComponent();
         
         // Aguarda a lista inicial ser renderizada.
-        await screen.findByText('API Principal');
+        const tableBody = screen.getByRole('table').querySelector('tbody');
+        expect(within(tableBody).getByText('API Principal')).toBeInTheDocument();
 
         // Simula o utilizador a escrever no campo de filtro de nome.
         const nameInput = screen.getByLabelText(/Nome/i);
@@ -81,9 +83,10 @@ describe('ResourceListPage', () => {
             // Afirma que a API foi chamada uma segunda vez com o parâmetro de filtro correto.
             expect(apiClient.get).toHaveBeenCalledWith('/resources?name=Cache');
             // Afirma que o item que deveria ter sido filtrado não está mais visível.
-            expect(screen.queryByText('API Principal')).not.toBeInTheDocument();
+            const updatedTableBody = screen.getByRole('rowgroup', { name: /table body/i });
+            expect(within(updatedTableBody).queryByText('API Principal')).not.toBeInTheDocument();
             // Afirma que o item filtrado ainda está visível.
-            expect(screen.getByText('Serviço de Cache')).toBeInTheDocument();
+            expect(within(updatedTableBody).getByText('Serviço de Cache')).toBeInTheDocument();
         });
     });
 });
