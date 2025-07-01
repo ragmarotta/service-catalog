@@ -65,6 +65,14 @@ A aplicação é totalmente conteinerizada com Docker, garantindo um setup de de
     -   Integração com provedores OAuth2 para autenticação externa, incluindo URL do provedor, Client ID, Client Secret, escopos e mapeamento de atributos de utilizador.
     -   Personalização do texto do botão de login para OAuth2.
 
+## Diagrama de Integração
+
+Para uma visão geral da arquitetura e como os componentes se interligam, consulte o [Diagrama de Integração](docs/integration_diagram.md).
+
+## Diagrama de Classes
+
+Para entender a estrutura dos dados e as relações entre os modelos e schemas da aplicação, consulte o [Diagrama de Classes](docs/class_diagram.md).
+
 ## Arquitetura e Tecnologias
 
 A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orquestrada com Docker Compose.
