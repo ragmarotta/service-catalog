@@ -6,14 +6,16 @@
 version: 2
 updates:
   - package-ecosystem: "npm" #
-    directory: "../frontend" # Location of package manifests
+    directory: "/frontend" # Location of package manifests
     schedule:
       interval: "weekly"
   - package-ecosystem: "docker"
-    directory: "../" # Location of package manifests
+    directories:
+      - "/frontend"
+      - "/backend"
     schedule:
       interval: "weekly"
   - package-ecosystem: "pip"
-    directory: "../backend" # Location of package manifests
+    directory: "/backend" # Location of package manifests
     schedule:
       interval: "weekly"
