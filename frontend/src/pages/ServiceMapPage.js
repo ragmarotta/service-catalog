@@ -205,8 +205,9 @@ const ServiceMapPage = () => {
         setEdges(originalEdges.map(edge => {
             const isAncestorEdge = ancestors.has(edge.source) && (ancestors.has(edge.target) || edge.target === clickedNode.id);
             const isDescendantEdge = descendants.has(edge.target) && (descendants.has(edge.source) || edge.source === clickedNode.id);
-            if (isDescendantEdge) return { ...edge, animated: true, style: { stroke: '#ef4444', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#ef4444' } };
-            if (isAncestorEdge) return { ...edge, animated: true, style: { stroke: '#22c55e', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#22c55e' } };
+            //Alterna a cor da linha para verde se for descendente, vermelho se for ancestral, ou cinza se não for parte da cadeia.
+            if (isDescendantEdge) return { ...edge, animated: true, style: { stroke: '#22c55e', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#22c55e' } };
+            if (isAncestorEdge) return { ...edge, animated: true, style: { stroke: '#ef4444', strokeWidth: 2 }, markerEnd: { ...edge.markerEnd, color: '#ef4444' } };
             return { ...edge, animated: false, style: { stroke: '#d1d5db' }, markerEnd: { ...edge.markerEnd, color: '#d1d5db' } };
         }));
     }, [getAncestors, getDescendants, originalEdges, setEdges]);
