@@ -40,6 +40,10 @@ A aplicação é totalmente conteinerizada com Docker, garantindo um setup de de
 
 ## Funcionalidades Principais
 
+-   **Análise por IA**:
+    -   Interface de chat para interagir com o Google Gemini (Google AI Studio).
+    -   Permite consultas em linguagem natural sobre o contexto da aplicação, incluindo recursos e eventos.
+    -   Retorna resultados em texto, listas comparativas, mapas de recursos e gráficos (futuras implementações).
 -   **Mapa de Serviços Interativo**:
     -   Visualização gráfica de todos os recursos e suas relações.
     -   **Edição "Drag-and-Drop"** para criar e remover relações de dependência visualmente.
@@ -150,6 +154,12 @@ Siga os passos abaixo para configurar e executar a aplicação no seu ambiente l
     # URL de Conexão com o Redis (para Rate Limiting)
     # IMPORTANTE: Use 'redis' como host, que é o nome do serviço no docker-compose.yml.
     REDIS_URL=redis://redis:6379
+
+    # Configurações para Google Gemini (Análise por IA)
+    # Obtenha sua API Key no Google AI Studio (https://aistudio.google.com/)
+    GEMINI_API_KEY=sua_api_key_do_gemini_aqui
+    # Modelo do Gemini a ser utilizado (ex: gemini-1.5-flash-latest, gemini-1.0-pro)
+    GEMINI_MODEL=gemini-1.5-flash-latest
     ```
 
     -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
@@ -237,6 +247,12 @@ A documentação completa e interativa da API está disponível em `http://local
 | `GET`  | `/api/resources/map`              | Obtém os dados formatados para o mapa de serviços.         |
 | `GET`  | `/api/meta/config`                | Obtém dados de configuração para o frontend.               |
 | `PUT`  | `/api/meta/config`                | Atualiza a configuração da aplicação (requer admin).       |
+
+### Análise por IA
+
+| Método | Endpoint           | Descrição                                        |
+| :----- | :----------------- | :----------------------------------------------- |
+| `POST` | `/api/ai/analyse`  | Envia um prompt para o Google Gemini e retorna a análise. |
 
 
 ### Utilizadores (Users)

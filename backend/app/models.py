@@ -116,6 +116,8 @@ class AppConfig(BaseModel):
     oauth2_username_attribute: Optional[str] = "preferred_username"
     oauth2_email_attribute: Optional[str] = "email"
     oauth2_login_button_text: Optional[str] = "Login with OAuth2"
+    gemini_api_key: Optional[str] = None
+    gemini_model: Optional[str] = "gemini-1.5-flash-latest" 
 
 class BulkDeleteRequest(BaseModel):
     ids: List[str]

@@ -13,6 +13,10 @@ from . import schemas
 from .models import Event, UserInDB, ResourceInDB, AppConfig
 from .security import get_password_hash
 from datetime import datetime, timezone
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # --- Função Auxiliar para Tags ---
 def _normalize_tags(tags: List[Dict[str, str]]) -> List[Dict[str, str]]:
@@ -240,6 +244,16 @@ async def add_event_to_resource(resource_id: str, event: schemas.EventCreate) ->
     await get_resource_collection().update_one({"_id": ObjectId(resource_id)}, {"$push": {"events": event_dict}})
     return await get_resource(resource_id)
 
+async def get_all_events() -> List[Event]:
+    """Busca todos os eventos de todos os recursos."""
+    events = []
+    cursor = get_resource_collection().find({}, {"events": 1, "_id": 0})
+    async for resource_data in cursor:
+        if "events" in resource_data:
+            for event_data in resource_data["events"]:
+                events.append(Event(**event_data))
+    return events
+
 # --- CRUD para Configuração da Aplicação ---
 
 def get_app_config_collection():
@@ -248,13 +262,20 @@ def get_app_config_collection():
 
 async def get_app_config() -> AppConfig:
     """
-    Busca a configuração da aplicação no banco de dados.
-    Se não houver configuração, retorna uma configuração padrão.
+    Busca a configuração da aplicação no banco de dados e complementa com variáveis de ambiente.
+    Se não houver configuração no DB, retorna uma configuração padrão.
     """
     config_data = await get_app_config_collection().find_one({})
     if config_data:
-        return AppConfig(**config_data)
-    return AppConfig() # Retorna uma configuração padrão se não houver nenhuma no DB
+        app_config = AppConfig(**config_data)
+    else:
+        app_config = AppConfig() # Retorna uma configuração padrão se não houver nenhuma no DB
+
+    # Sobrescreve com variáveis de ambiente, se existirem
+    app_config.gemini_api_key = os.getenv("GEMINI_API_KEY", app_config.gemini_api_key)
+    app_config.gemini_model = os.getenv("GEMINI_MODEL", app_config.gemini_model)
+
+    return app_config
 
 async def update_app_config(config: AppConfig) -> AppConfig:
     """

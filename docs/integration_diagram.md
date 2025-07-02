@@ -8,10 +8,12 @@ graph TD
         B --> C(Backend - FastAPI/Python)
         C --> D(MongoDB - Banco de Dados)
         C --> E(Redis - Cache/Rate Limiting)
+        C --> H(Google Gemini - IA Generativa)
     end
 
     subgraph Integrações Externas
         C -- Autenticação OAuth2 --> F(Provedor OAuth2)
+        C -- Análise de Dados --> H
     end
 
     subgraph Implantação

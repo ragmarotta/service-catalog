@@ -8,14 +8,21 @@ Este ficheiro é responsável por:
 3. Orquestrar os eventos de ciclo de vida da aplicação (startup e shutdown).
 4. Incluir e organizar os diferentes módulos de rotas (auth, users, resources).
 """
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from .database import connect_to_mongo, close_mongo_connection, setup_root_user
-from .routers import auth, users, resources, config
-from fastapi_limiter import FastAPILimiter
+from pydantic import BaseModel
+import google.generativeai as genai
 import redis.asyncio as redis
 import os
+
+from .database import connect_to_mongo, close_mongo_connection, setup_root_user
+from .routers import auth, users, resources, config
+from . import crud
+from .models import AppConfig
+
+from fastapi_limiter import FastAPILimiter
+
 
 # --- Eventos de Ciclo de Vida (Lifespan) ---
 @asynccontextmanager
@@ -77,6 +84,36 @@ app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(users.router, prefix="/api", tags=["Users"])
 app.include_router(resources.router, prefix="/api", tags=["Resources"])
 app.include_router(config.router, prefix="/api", tags=["Configuration"])
+
+class AIPrompt(BaseModel):
+    prompt: str
+
+@app.post("/api/ai/analyse", tags=["AI"])
+async def analyse_prompt(prompt: AIPrompt, config: AppConfig = Depends(crud.get_app_config)):
+    if not config.gemini_api_key:
+        raise HTTPException(status_code=500, detail="API key for Google Gemini is not configured.")
+
+    genai.configure(api_key=config.gemini_api_key)
+    model = genai.GenerativeModel(config.gemini_model)
+
+    resources = await crud.get_all_resources()
+    events = await crud.get_all_events()
+
+    full_prompt = f"""Você é um assistente de IA especialista em análise de dados de um catálogo de serviços de TI.
+    Sua resposta deve ser em português do Brasil e em linguagem natural.
+    
+    Aqui está o contexto da aplicação:
+    Recursos: {resources}
+    Eventos: {events}
+    
+    Pergunta do usuário: {prompt.prompt}
+    """
+
+    try:
+        response = model.generate_content(full_prompt)
+        return {"response": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/")

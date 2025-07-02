@@ -66,6 +66,8 @@ classDiagram
         +Optional~str~ oauth2_username_attribute
         +Optional~str~ oauth2_email_attribute
         +Optional~str~ oauth2_login_button_text
+        +Optional~str~ gemini_api_key
+        +Optional~str~ gemini_model
     }
 
     class BulkDeleteRequest {

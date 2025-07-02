@@ -9,6 +9,7 @@ motor
 email-validator
 python-multipart
 fastapi-limiter
+google-generativeai
 
 # Dependências de Teste
 pytest

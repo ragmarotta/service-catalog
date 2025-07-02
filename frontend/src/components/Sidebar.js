@@ -10,7 +10,8 @@ import {
   ChevronDoubleLeftIcon,
   ComputerDesktopIcon,
   RectangleStackIcon, // Ícone para a lista de recursos
-  Cog6ToothIcon // Novo ícone para configurações
+  Cog6ToothIcon, // Novo ícone para configurações
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import './Sidebar.css';
 
@@ -67,6 +68,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         >
           <ClockIcon className="sidebar-nav-icon" />
           <span className={`sidebar-nav-text ${!sidebarOpen && 'hidden'}`}>Timeline de Eventos</span>
+        </NavLink>
+        <NavLink
+          to="/ai"
+          className={({ isActive }) => `sidebar-nav-link ${isActive ? 'sidebar-nav-link-active' : ''}`}
+        >
+          <SparklesIcon className="sidebar-nav-icon" />
+          <span className={`sidebar-nav-text ${!sidebarOpen && 'hidden'}`}>Análise por IA</span>
         </NavLink>
         {isAdmin && (
           <NavLink
