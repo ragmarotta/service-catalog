@@ -269,4 +269,4 @@ A documentação completa e interativa da API está disponível em `http://local
 
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT.
+Este projeto está licenciado sob a Licença Apache 2.0.
