@@ -42,52 +42,51 @@ const EventTimelinePage = () => {
         fetchResources();
     }, []); // Empty dependency array means this runs once on mount
 
-    // Fetch timeline data based on selected filters
-    // Fetch timeline data based on selected filters
-    useEffect(() => {
-        const fetchTimeline = async () => {
-            if (!selectedResource) {
-                setEvents([]);
+    const fetchTimeline = useCallback(async () => {
+        if (!selectedResource) {
+            setEvents([]);
+            setAvailableEventTypes([]);
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        try {
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', new Date(startDate).toISOString());
+            if (endDate) params.append('end_date', new Date(endDate).toISOString());
+
+            const response = await apiClient.get(`/resources/${selectedResource}/timeline?${params.toString()}`);
+            setEvents(response.data);
+
+            if (response.data.length > 0) {
+                const uniqueTypes = [...new Set(response.data.map(event => event.event_type))].sort();
+                setAvailableEventTypes(uniqueTypes);
+
+                const newColors = {};
+                uniqueTypes.forEach((type, index) => {
+                    newColors[type] = COLOR_PALETTE[index % COLOR_PALETTE.length];
+                });
+                setEventTypeColors(newColors);
+
+                setSelectedEventTypes(prev => prev.filter(t => uniqueTypes.includes(t)));
+            } else {
                 setAvailableEventTypes([]);
-                return;
+                setEventTypeColors({});
+                setSelectedEventTypes([]);
             }
 
-            setLoading(true);
-            setError('');
-            try {
-                const params = new URLSearchParams();
-                if (startDate) params.append('start_date', new Date(startDate).toISOString());
-                if (endDate) params.append('end_date', new Date(endDate).toISOString());
+        } catch (err) {
+            setError('Falha ao carregar a timeline de eventos.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedResource, startDate, endDate]);
 
-                const response = await apiClient.get(`/resources/${selectedResource}/timeline?${params.toString()}`);
-                setEvents(response.data);
-
-                if (response.data.length > 0) {
-                    const uniqueTypes = [...new Set(response.data.map(event => event.event_type))].sort();
-                    setAvailableEventTypes(uniqueTypes);
-
-                    const newColors = {};
-                    uniqueTypes.forEach((type, index) => {
-                        newColors[type] = COLOR_PALETTE[index % COLOR_PALETTE.length];
-                    });
-                    setEventTypeColors(newColors);
-
-                    setSelectedEventTypes(prev => prev.filter(t => uniqueTypes.includes(t)));
-                } else {
-                    setAvailableEventTypes([]);
-                    setEventTypeColors({});
-                    setSelectedEventTypes([]);
-                }
-
-            } catch (err) {
-                setError('Falha ao carregar a timeline de eventos.');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
+    useEffect(() => {
         fetchTimeline();
-    }, [selectedResource, startDate, endDate, COLOR_PALETTE]);
+    }, [fetchTimeline]);
     
     /**
      * Formata uma string de data ISO (que vem da API em UTC) para o fuso horário de São Paulo.
@@ -172,6 +171,11 @@ const EventTimelinePage = () => {
                         </button>
                     </div>
                 )}
+                <div className="event-timeline-refresh-button-container">
+                    <button onClick={fetchTimeline} className="event-timeline-refresh-button">
+                        Atualizar
+                    </button>
+                </div>
             </div>
 
             <div className="relative">
