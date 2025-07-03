@@ -4,7 +4,10 @@ services:
   backend:
     # Constrói a imagem Docker a partir do Dockerfile localizado na pasta ./backend.
     build: ./backend
-    container_name: service_catalog_backend
+    # O 'container_name' foi removido para permitir múltiplas instâncias.
+    # A seção 'ports' foi removida para evitar conflitos de porta no host.
+    deploy:
+      replicas: 1
     # Comando para iniciar a aplicação dentro do contêiner.
     # Uvicorn é o servidor ASGI que roda a nossa aplicação FastAPI.
     # --host 0.0.0.0 torna a API acessível de fora do contêiner.
@@ -14,9 +17,6 @@ services:
     # Isso permite que as alterações no código local reflitam instantaneamente no contêiner.
     volumes:
       - ./backend:/app
-    # Mapeia a porta 8000 do contêiner para a porta 8000 da sua máquina local.
-    ports:
-      - "8000:8000"
     # Carrega as variáveis de ambiente a partir do arquivo .env na pasta do backend.
     env_file:
       - ./backend/.env

@@ -194,6 +194,25 @@ Para parar todos os contêineres, pressione `Ctrl + C` no terminal e depois exec
 docker-compose down
 ```
 
+### Escalando o Backend
+
+A aplicação foi projetada para ser stateless, permitindo que o serviço de backend seja escalado horizontalmente para lidar com mais requisições.
+
+Para alterar o número de instâncias (réplicas) do backend, edite a seção `deploy` do serviço `backend` no ficheiro `docker-compose.yml`:
+
+```yaml
+services:
+  backend:
+    build: ./backend
+    deploy:
+      replicas: 2 # Altere este número para a quantidade de instâncias desejada
+    # ... resto da configuração
+```
+
+Depois de alterar o número de réplicas, execute o comando `docker-compose up --build -d` para aplicar as alterações.
+
+> **Nota**: Ao escalar para mais de uma réplica, a publicação de portas (`ports`) do serviço `backend` é desativada para evitar conflitos no host. O acesso à API continua a ser feito através do serviço `frontend`, que atua como um proxy reverso.
+
 ## Executando os Testes
 
 Este projeto inclui suítes de testes unitários tanto para o backend quanto para o frontend.
