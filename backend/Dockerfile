@@ -1,6 +1,6 @@
 # 1. Imagem Base: Começa a partir de uma imagem oficial do Python, versão 3.13,
 #    na variante 'slim', que é uma versão leve e otimizada.
-FROM python:3.13-slim
+FROM python:3.13.7-slim
 
 # Create a non-root user and group
 RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
