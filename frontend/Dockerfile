@@ -1,7 +1,7 @@
 # --- ESTÁGIO 1: Build (Construção) ---
 # O objetivo deste estágio é compilar o código React para produção.
 # Usamos uma imagem oficial do Node.js como base, que contém todas as ferramentas (npm) necessárias.
-FROM node:24-alpine as build
+FROM node:25-alpine as build
 
 # Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
