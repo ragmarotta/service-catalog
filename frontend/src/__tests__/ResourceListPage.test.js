@@ -74,7 +74,7 @@ describe('ResourceListPage', () => {
 
         // Configura o mock para a segunda chamada da API (com filtro).
         const filteredMock = [mockResources[1]]; // Apenas o serviço de cache
-        apiClient.get.mockResolvedValueOnce({ data: filteredMock });
+        apiClient.get.mockResolvedValue({ data: filteredMock });
 
         // Simula o clique no botão de filtrar.
         const filterButton = screen.getByRole('button', { name: /Filtrar/i });
@@ -85,7 +85,7 @@ describe('ResourceListPage', () => {
             // Afirma que a API foi chamada uma segunda vez com o parâmetro de filtro correto.
             expect(apiClient.get).toHaveBeenCalledWith('/resources?name=Cache');
             // Afirma que o item que deveria ter sido filtrado não está mais visível.
-            const updatedTableBody = screen.getByRole('rowgroup', { name: /table body/i });
+            const updatedTableBody = screen.getByRole('table').querySelector('tbody');
             // "API Principal" ainda aparece 1 vez porque é pai do "Serviço de Cache", mas a linha principal sumiu (antes aparecia 2 vezes)
             expect(within(updatedTableBody).getAllByText('API Principal').length).toBe(1);
             // Afirma que o item filtrado ainda está visível.
