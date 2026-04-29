@@ -5,7 +5,9 @@ services:
     # Constrói a imagem Docker a partir do Dockerfile localizado na pasta ./backend.
     build: ./backend
     # O 'container_name' foi removido para permitir múltiplas instâncias.
-    # A seção 'ports' foi removida para evitar conflitos de porta no host.
+    # A seção 'ports' foi restaurada para permitir o acesso via localhost:8000
+    ports:
+      - "8000:8000"
     deploy:
       replicas: 1
     # Comando para iniciar a aplicação dentro do contêiner.

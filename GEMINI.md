@@ -9,6 +9,7 @@ O backend fornece uma API RESTful para gerenciar recursos, usuários e autentica
 - `docker-compose up --build`: Builda e inicia o backend e o frontend com o Docker.
 - `sh run-tests.sh`: Executa os testes de backend.
 - `sh redeploy.sh`: Para, remove, builda e reinicia os contêineres do Docker.
+- `./logs.sh <servico>`: Visualiza os logs de um contêiner específico em tempo real.
 
 # Bibliotecas e Frameworks
 

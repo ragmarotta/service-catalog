@@ -41,9 +41,10 @@ describe('ResourceListPage', () => {
         expect(apiClient.get).toHaveBeenCalledWith('/resources?');
 
         // Aguarda o componente re-renderizar com os dados e afirma que os nomes estão no ecrã.
+        await screen.findAllByText('API Principal');
         const tableBody = screen.getByRole('table').querySelector('tbody');
-        expect(within(tableBody).getByText('API Principal')).toBeInTheDocument();
-        expect(within(tableBody).getByText('Serviço de Cache')).toBeInTheDocument();
+        expect(within(tableBody).getAllByText('API Principal').length).toBeGreaterThan(0);
+        expect(within(tableBody).getAllByText('Serviço de Cache').length).toBeGreaterThan(0);
     });
 
     test('deve exibir uma mensagem de erro em caso de falha da API', async () => {
@@ -63,8 +64,9 @@ describe('ResourceListPage', () => {
         renderComponent();
         
         // Aguarda a lista inicial ser renderizada.
+        await screen.findAllByText('API Principal');
         const tableBody = screen.getByRole('table').querySelector('tbody');
-        expect(within(tableBody).getByText('API Principal')).toBeInTheDocument();
+        expect(within(tableBody).getAllByText('API Principal').length).toBeGreaterThan(0);
 
         // Simula o utilizador a escrever no campo de filtro de nome.
         const nameInput = screen.getByLabelText(/Nome/i);
@@ -84,9 +86,10 @@ describe('ResourceListPage', () => {
             expect(apiClient.get).toHaveBeenCalledWith('/resources?name=Cache');
             // Afirma que o item que deveria ter sido filtrado não está mais visível.
             const updatedTableBody = screen.getByRole('rowgroup', { name: /table body/i });
-            expect(within(updatedTableBody).queryByText('API Principal')).not.toBeInTheDocument();
+            // "API Principal" ainda aparece 1 vez porque é pai do "Serviço de Cache", mas a linha principal sumiu (antes aparecia 2 vezes)
+            expect(within(updatedTableBody).getAllByText('API Principal').length).toBe(1);
             // Afirma que o item filtrado ainda está visível.
-            expect(within(updatedTableBody).getByText('Serviço de Cache')).toBeInTheDocument();
+            expect(within(updatedTableBody).getAllByText('Serviço de Cache').length).toBeGreaterThan(0);
         });
     });
 });

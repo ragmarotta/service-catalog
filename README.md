@@ -1,7 +1,7 @@
 # Catálogo de Serviços Interativo
 
-[![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-24-339933?style=for-the-badge&logo=nodedotjs)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
@@ -87,7 +87,7 @@ A aplicação segue uma arquitetura de microserviços moderna e desacoplada, orq
 |                 | **ReactFlow 11** | Utilizado para a renderização e interatividade do mapa de serviços.                                |
 |                 | **Tailwind CSS** | Framework CSS "utility-first" para uma estilização rápida e responsiva.                            |
 |                 | **Nginx 1.29** | Servidor web de alta performance que serve a aplicação React e atua como proxy reverso para a API. |
-| **Backend** | **Python 3.13** | Linguagem principal para a lógica de negócio da API.                                               |
+| **Backend** | **Python 3.12** | Linguagem principal para a lógica de negócio da API.                                               |
 |                 | **FastAPI** | Framework web moderno e de alta performance para a construção da API RESTful.                      |
 |                 | **Pydantic** | Utilizado para validação de dados, serialização e geração automática da documentação da API.       |
 |                 | **Uvicorn** | Servidor ASGI (Asynchronous Server Gateway Interface) que executa a aplicação FastAPI.             |
@@ -158,8 +158,8 @@ Siga os passos abaixo para configurar e executar a aplicação no seu ambiente l
     # Configurações para Google Gemini (Análise por IA)
     # Obtenha sua API Key no Google AI Studio (https://aistudio.google.com/)
     GEMINI_API_KEY=sua_api_key_do_gemini_aqui
-    # Modelo do Gemini a ser utilizado (ex: gemini-1.5-flash-latest, gemini-1.0-pro)
-    GEMINI_MODEL=gemini-1.5-flash-latest
+    # Modelo do Gemini a ser utilizado (ex: gemini-1.5-flash, gemini-2.5-flash)
+    GEMINI_MODEL=gemini-1.5-flash
     ```
 
     -   **Como gerar o hash**: Pode usar uma ferramenta online (como o [Bcrypt Generator](https://bcrypt-generator.com/)) ou executar o seguinte comando Python no seu terminal (requer `pip install "passlib[bcrypt]"`):
@@ -192,6 +192,21 @@ docker-compose up --build
 Para parar todos os contêineres, pressione `Ctrl + C` no terminal e depois execute:
 ```bash
 docker-compose down
+```
+
+### Visualizando os Logs
+
+Foi criado um script facilitador para visualizar os logs dos contêineres em tempo real:
+
+```bash
+# Permissão de execução (apenas na primeira vez)
+chmod +x logs.sh
+
+# Uso: ./logs.sh <nome_do_servico>
+./logs.sh backend
+./logs.sh frontend
+./logs.sh mongo
+./logs.sh redis
 ```
 
 ### Escalando o Backend

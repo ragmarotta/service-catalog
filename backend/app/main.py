@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
-import google.generativeai as genai
+from google import genai
 import redis.asyncio as redis
 import os
 
@@ -93,8 +93,7 @@ async def analyse_prompt(prompt: AIPrompt, config: AppConfig = Depends(crud.get_
     if not config.gemini_api_key:
         raise HTTPException(status_code=500, detail="API key for Google Gemini is not configured.")
 
-    genai.configure(api_key=config.gemini_api_key)
-    model = genai.GenerativeModel(config.gemini_model)
+    client = genai.Client(api_key=config.gemini_api_key)
 
     resources = await crud.get_all_resources()
     events = await crud.get_all_events()
@@ -110,7 +109,10 @@ async def analyse_prompt(prompt: AIPrompt, config: AppConfig = Depends(crud.get_
     """
 
     try:
-        response = model.generate_content(full_prompt)
+        response = client.models.generate_content(
+            model=config.gemini_model,
+            contents=full_prompt
+        )
         return {"response": response.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
